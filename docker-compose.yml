@@ -1,0 +1,200 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: transportista-postgres
+    environment:
+      POSTGRES_DB: transportista_db
+      POSTGRES_USER: transportista_user
+      POSTGRES_PASSWORD: transportista_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - transportista-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transportista_user -d transportista_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak - CON FIX DE ISSUER
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: transportista-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: transportista_user
+      KC_DB_PASSWORD: transportista_pass
+      # FIX: Configurar para aceptar ambas URLs
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_URL: http://localhost:8080
+      KC_HOSTNAME_ADMIN_URL: http://localhost:8080
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-config:/opt/keycloak/data/import
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transportista-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 90s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: transportista-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      # Use KEYCLOAK_HOST so services in Docker resolve Keycloak por su hostname de contenedor
+      KEYCLOAK_HOST: keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/transportista-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      solicitudes-service:
+        condition: service_started
+      logistica-service:
+        condition: service_started
+      tarifas-service:
+        condition: service_started
+      tracking-service:
+        condition: service_started
+    networks:
+      - transportista-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Solicitudes Service
+  solicitudes-service:
+    build:
+      context: ./solicitudes-service
+      dockerfile: Dockerfile
+    container_name: transportista-solicitudes
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transportista_db
+      SPRING_DATASOURCE_USERNAME: transportista_user
+      SPRING_DATASOURCE_PASSWORD: transportista_pass
+      # Docker: usar el hostname del contenedor Keycloak
+      KEYCLOAK_HOST: keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/transportista-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - transportista-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Logistica Service
+  logistica-service:
+    build:
+      context: ./logistica-service
+      dockerfile: Dockerfile
+    container_name: transportista-logistica
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transportista_db
+      SPRING_DATASOURCE_USERNAME: transportista_user
+      SPRING_DATASOURCE_PASSWORD: transportista_pass
+      KEYCLOAK_HOST: keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/transportista-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - transportista-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Tarifas Service
+  tarifas-service:
+    build:
+      context: ./tarifas-service
+      dockerfile: Dockerfile
+    container_name: transportista-tarifas
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transportista_db
+      SPRING_DATASOURCE_USERNAME: transportista_user
+      SPRING_DATASOURCE_PASSWORD: transportista_pass
+      KEYCLOAK_HOST: keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/transportista-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - transportista-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Tracking Service
+  tracking-service:
+    build:
+      context: ./tracking-service
+      dockerfile: Dockerfile
+    container_name: transportista-tracking
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transportista_db
+      SPRING_DATASOURCE_USERNAME: transportista_user
+      SPRING_DATASOURCE_PASSWORD: transportista_pass
+      KEYCLOAK_HOST: keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/transportista-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - transportista-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+networks:
+  transportista-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

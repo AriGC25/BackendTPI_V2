@@ -1,0 +1,105 @@
+{
+  "realm": "transportista-realm",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "CLIENTE",
+        "description": "Cliente que solicita transportes"
+      },
+      {
+        "name": "OPERADOR",
+        "description": "Operador que gestiona el sistema"
+      },
+      {
+        "name": "TRANSPORTISTA",
+        "description": "Transportista que realiza los traslados"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "cliente1",
+      "enabled": true,
+      "email": "cliente1@example.com",
+      "firstName": "Cliente",
+      "lastName": "Uno",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cliente123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["CLIENTE"]
+    },
+    {
+      "username": "operador1",
+      "enabled": true,
+      "email": "operador1@example.com",
+      "firstName": "Operador",
+      "lastName": "Uno",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "operador123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["OPERADOR"]
+    },
+    {
+      "username": "transportista1",
+      "enabled": true,
+      "email": "transportista1@example.com",
+      "firstName": "Transportista",
+      "lastName": "Uno",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "transportista123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["TRANSPORTISTA"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "backend-client",
+      "enabled": true,
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "backend-client-secret",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "realm roles mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

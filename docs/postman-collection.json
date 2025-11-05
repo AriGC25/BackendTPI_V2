@@ -1,0 +1,333 @@
+{
+  "info": {
+    "name": "Backend TPI - Sistema Transportista",
+    "description": "Colección completa de endpoints para el sistema de gestión de transporte",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "backend-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "backend-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "cliente1",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "cliente123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+            }
+          }
+        },
+        {
+          "name": "Login - Operador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "backend-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "backend-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "operador1",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "operador123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "item": [
+        {
+          "name": "Crear Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Usuario\",\n  \"dni\": \"99999999\",\n  \"domicilio\": \"Calle Test 123\",\n  \"telefono\": \"+5491199999999\",\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tarifas/clientes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tarifas", "clientes"]
+            }
+          }
+        },
+        {
+          "name": "Listar Clientes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tarifas/clientes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tarifas", "clientes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Depósitos",
+      "item": [
+        {
+          "name": "Listar Depósitos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/logistica/depositos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logistica", "depositos"]
+            }
+          }
+        },
+        {
+          "name": "Listar Depósitos Activos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/logistica/depositos/activos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logistica", "depositos", "activos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Camiones",
+      "item": [
+        {
+          "name": "Listar Camiones",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/logistica/camiones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logistica", "camiones"]
+            }
+          }
+        },
+        {
+          "name": "Listar Camiones Disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/logistica/camiones/disponibles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logistica", "camiones", "disponibles"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Solicitudes",
+      "item": [
+        {
+          "name": "Crear Solicitud",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"pesoContenedor\": 10.5,\n  \"volumenContenedor\": 25.0,\n  \"descripcionContenedor\": \"Mercadería general\",\n  \"direccionOrigen\": \"Av. Corrientes 1234, CABA\",\n  \"latitudOrigen\": -34.6037,\n  \"longitudOrigen\": -58.3816,\n  \"direccionDestino\": \"San Martín 890, Córdoba\",\n  \"latitudDestino\": -31.4201,\n  \"longitudDestino\": -64.1888\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes/solicitudes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes", "solicitudes"]
+            }
+          }
+        },
+        {
+          "name": "Listar Solicitudes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes/solicitudes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes", "solicitudes"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Solicitud por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes/solicitudes/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes", "solicitudes", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking",
+      "item": [
+        {
+          "name": "Seguimiento por Solicitud",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tracking/tracking/solicitud/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tracking", "tracking", "solicitud", "1"]
+            }
+          }
+        },
+        {
+          "name": "Seguimiento por Contenedor",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tracking/tracking/contenedor/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tracking", "tracking", "contenedor", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

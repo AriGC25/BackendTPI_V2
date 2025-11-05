@@ -1,180 +1,179 @@
 package com.transportista.solicitudes.service;
 
-import com.transportista.solicitudes.entity.Solicitud;
-import com.transportista.solicitudes.entity.Tramo;
-import com.transportista.solicitudes.repository.SolicitudRepository;
-import lombok.RequiredArgsConstructor;
+import com.transportista.solicitudes.entity.*;
+import com.transportista.solicitudes.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CalculoCostoService {
 
-    private final SolicitudRepository solicitudRepository;
+    @Autowired
+    private GoogleMapsService googleMapsService;
 
+    @Autowired
+    private SolicitudRepository solicitudRepository;
+
+    @Autowired
+    private RutaRepository rutaRepository;
+
+    @Autowired
+    private TramoRepository tramoRepository;
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+
+    /**
+     * Calcula el costo total de una solicitud con todas las tarifas aplicadas
+     */
     public BigDecimal calcularCostoTotal(Long solicitudId) {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + solicitudId));
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
+
+        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
+                .orElseThrow(() -> new IllegalArgumentException("No hay ruta asignada"));
+
+        List<Tramo> tramos = tramoRepository.findByRutaIdOrderByOrdenTramo(ruta.getId());
 
         BigDecimal costoTotal = BigDecimal.ZERO;
 
-        // Obtener la ruta y sus tramos
-        if (solicitud.getRuta() != null && solicitud.getRuta().getTramos() != null) {
-            List<Tramo> tramos = solicitud.getRuta().getTramos();
+        // 1. Costo por kilómetro de cada tramo
+        for (Tramo tramo : tramos) {
+            BigDecimal distancia = googleMapsService.calcularDistanciaReal(
+                    tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
+                    tramo.getLatitudDestino(), tramo.getLongitudDestino()
+            );
 
-            for (Tramo tramo : tramos) {
-                BigDecimal costoTramo = calcularCostoTramo(tramo, solicitud);
-                costoTotal = costoTotal.add(costoTramo);
+            // Obtener tarifa del tipo de tramo desde tarifas-service
+            BigDecimal costoPorKm = obtenerCostoPorKm(tramo.getTipoTramo());
+            BigDecimal costoTramo = distancia.multiply(costoPorKm);
+
+            // Si tiene camión asignado, agregar costo de combustible
+            if (tramo.getCamionId() != null) {
+                BigDecimal costoCombustible = calcularCostoCombustible(
+                        tramo.getCamionId(), distancia);
+                costoTramo = costoTramo.add(costoCombustible);
             }
+
+            costoTotal = costoTotal.add(costoTramo);
         }
 
-        // Agregar costo base de gestión
-        BigDecimal costoGestion = new BigDecimal("5000.00"); // Costo fijo de gestión
-        costoTotal = costoTotal.add(costoGestion);
+        // 2. Costo de estadías en depósitos
+        BigDecimal costoEstadias = calcularCostoEstadias(tramos);
+        costoTotal = costoTotal.add(costoEstadias);
+
+        // 3. Factor por peso y volumen del contenedor
+        BigDecimal factor = calcularFactorContenedor(solicitud.getContenedor());
+        costoTotal = costoTotal.multiply(factor);
 
         return costoTotal.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calcularCostoTramo(Tramo tramo, Solicitud solicitud) {
-        BigDecimal costoTramo = BigDecimal.ZERO;
+    /**
+     * Calcula el tiempo estimado de entrega en horas
+     */
+    public BigDecimal calcularTiempoEstimado(Long solicitudId) {
+        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
+                .orElseThrow(() -> new IllegalArgumentException("No hay ruta asignada"));
 
-        // Calcular distancia estimada (simulado - en producción usaría Google Maps)
-        BigDecimal distanciaKm = calcularDistanciaSimulada(
-            tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
-            tramo.getLatitudDestino(), tramo.getLongitudDestino()
-        );
+        List<Tramo> tramos = tramoRepository.findByRutaIdOrderByOrdenTramo(ruta.getId());
 
-        // Costo por kilómetro según tipo de tramo
-        BigDecimal costoPorKm = obtenerCostoPorKmSegunTipo(tramo.getTipoTramo());
-        BigDecimal costoDistancia = distanciaKm.multiply(costoPorKm);
-        costoTramo = costoTramo.add(costoDistancia);
+        BigDecimal tiempoTotal = BigDecimal.ZERO;
+        final BigDecimal VELOCIDAD_PROMEDIO_KMH = BigDecimal.valueOf(60); // 60 km/h
+        final BigDecimal TIEMPO_CARGA_DESCARGA_HORAS = BigDecimal.valueOf(2); // 2 horas
 
-        // Costo de combustible
-        BigDecimal consumoPorKm = new BigDecimal("0.35"); // 0.35 litros por km
-        BigDecimal precioCombustible = new BigDecimal("150.00"); // $150 por litro
-        BigDecimal costoCombustible = distanciaKm.multiply(consumoPorKm).multiply(precioCombustible);
-        costoTramo = costoTramo.add(costoCombustible);
+        for (Tramo tramo : tramos) {
+            BigDecimal distancia = googleMapsService.calcularDistanciaReal(
+                    tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
+                    tramo.getLatitudDestino(), tramo.getLongitudDestino()
+            );
 
-        // Costo de estadía si hay fechas reales
-        if (tramo.getFechaInicio() != null && tramo.getFechaFin() != null) {
-            BigDecimal costoEstadia = calcularCostoEstadia(tramo);
-            costoTramo = costoTramo.add(costoEstadia);
+            BigDecimal tiempoViaje = distancia.divide(VELOCIDAD_PROMEDIO_KMH, 2, RoundingMode.HALF_UP);
+            tiempoTotal = tiempoTotal.add(tiempoViaje).add(TIEMPO_CARGA_DESCARGA_HORAS);
         }
 
-        // Factor peso/volumen del contenedor
-        BigDecimal factorPesoVolumen = calcularFactorPesoVolumen(solicitud);
-        costoTramo = costoTramo.multiply(factorPesoVolumen);
-
-        return costoTramo.setScale(2, RoundingMode.HALF_UP);
+        return tiempoTotal.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calcularDistanciaSimulada(BigDecimal latOrigen, BigDecimal lonOrigen,
-                                               BigDecimal latDestino, BigDecimal lonDestino) {
-        // Fórmula de Haversine simplificada para calcular distancia
-        double lat1 = Math.toRadians(latOrigen.doubleValue());
-        double lon1 = Math.toRadians(lonOrigen.doubleValue());
-        double lat2 = Math.toRadians(latDestino.doubleValue());
-        double lon2 = Math.toRadians(lonDestino.doubleValue());
+    private BigDecimal obtenerCostoPorKm(String tipoTramo) {
+        try {
+            // Llamar a tarifas-service para obtener la tarifa activa
+            String url = "http://tarifas-service:8083/tarifas/tipo/" + tipoTramo;
 
-        double dlat = lat2 - lat1;
-        double dlon = lon2 - lon1;
+            var response = webClientBuilder.build()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(TarifaResponse.class)
+                    .block();
 
-        double a = Math.sin(dlat/2) * Math.sin(dlat/2) +
-                   Math.cos(lat1) * Math.cos(lat2) *
-                   Math.sin(dlon/2) * Math.sin(dlon/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double distance = 6371 * c; // Radio de la Tierra en km
-
-        return new BigDecimal(distance).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal obtenerCostoPorKmSegunTipo(String tipoTramo) {
-        switch (tipoTramo) {
-            case "ORIGEN_DESTINO":
-                return new BigDecimal("120.00");
-            case "ORIGEN_DEPOSITO":
-                return new BigDecimal("100.00");
-            case "DEPOSITO_DEPOSITO":
-                return new BigDecimal("90.00");
-            case "DEPOSITO_DESTINO":
-                return new BigDecimal("110.00");
-            default:
-                return new BigDecimal("100.00");
+            return response != null ? response.getCostoPorKm() : BigDecimal.valueOf(100);
+        } catch (Exception e) {
+            // Valor por defecto si falla
+            return BigDecimal.valueOf(100);
         }
     }
 
-    private BigDecimal calcularCostoEstadia(Tramo tramo) {
-        if (tramo.getFechaInicio() == null || tramo.getFechaFin() == null) {
-            return BigDecimal.ZERO;
-        }
+    private BigDecimal calcularCostoCombustible(Long camionId, BigDecimal distancia) {
+        try {
+            String url = "http://logistica-service:8082/camiones/" + camionId;
 
-        Duration duracion = Duration.between(tramo.getFechaInicio(), tramo.getFechaFin());
-        long dias = duracion.toDays();
+            var camion = webClientBuilder.build()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(CamionResponse.class)
+                    .block();
 
-        if (dias > 1) {
-            // Cobrar estadía por días adicionales
-            BigDecimal tarifaEstadia = new BigDecimal("500.00"); // $500 por día
-            return tarifaEstadia.multiply(new BigDecimal(dias - 1));
+            if (camion != null && camion.getConsumoCombustiblePorKm() != null) {
+                BigDecimal litrosConsumidos = distancia.multiply(camion.getConsumoCombustiblePorKm());
+                BigDecimal precioPorLitro = BigDecimal.valueOf(150); // Precio fijo o de tarifa
+                return litrosConsumidos.multiply(precioPorLitro);
+            }
+        } catch (Exception e) {
+            // Ignorar si no se puede obtener
         }
 
         return BigDecimal.ZERO;
     }
 
-    private BigDecimal calcularFactorPesoVolumen(Solicitud solicitud) {
-        if (solicitud.getContenedor() == null) {
-            return BigDecimal.ONE;
-        }
+    private BigDecimal calcularCostoEstadias(List<Tramo> tramos) {
+        final BigDecimal COSTO_DIA_DEPOSITO = BigDecimal.valueOf(500);
+        int cantidadDepositosIntermedios = (int) tramos.stream()
+                .filter(t -> "DEPOSITO_DEPOSITO".equals(t.getTipoTramo()) ||
+                        "ORIGEN_DEPOSITO".equals(t.getTipoTramo()))
+                .count();
 
-        BigDecimal peso = solicitud.getContenedor().getPeso();
-        BigDecimal volumen = solicitud.getContenedor().getVolumen();
-
-        BigDecimal factor = BigDecimal.ONE;
-
-        // Factor por peso (> 20 toneladas)
-        if (peso != null && peso.compareTo(new BigDecimal("20000")) > 0) {
-            factor = factor.add(new BigDecimal("0.15")); // +15%
-        }
-
-        // Factor por volumen (> 50 m³)
-        if (volumen != null && volumen.compareTo(new BigDecimal("50")) > 0) {
-            factor = factor.add(new BigDecimal("0.10")); // +10%
-        }
-
-        return factor;
+        return COSTO_DIA_DEPOSITO.multiply(BigDecimal.valueOf(cantidadDepositosIntermedios));
     }
 
-    public BigDecimal calcularTiempoEstimado(Long solicitudId) {
-        Solicitud solicitud = solicitudRepository.findById(solicitudId)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + solicitudId));
+    private BigDecimal calcularFactorContenedor(Contenedor contenedor) {
+        // Factor basado en peso y volumen
+        BigDecimal pesoFactor = contenedor.getPeso().divide(BigDecimal.valueOf(20000), 4, RoundingMode.HALF_UP);
+        BigDecimal volumenFactor = contenedor.getVolumen().divide(BigDecimal.valueOf(50), 4, RoundingMode.HALF_UP);
 
-        BigDecimal tiempoTotalHoras = BigDecimal.ZERO;
+        BigDecimal factor = BigDecimal.ONE.add(pesoFactor).add(volumenFactor);
+        return factor.min(BigDecimal.valueOf(2.0)); // Máximo 2x el costo base
+    }
 
-        if (solicitud.getRuta() != null && solicitud.getRuta().getTramos() != null) {
-            for (Tramo tramo : solicitud.getRuta().getTramos()) {
-                BigDecimal distanciaKm = calcularDistanciaSimulada(
-                    tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
-                    tramo.getLatitudDestino(), tramo.getLongitudDestino()
-                );
+    // DTOs internos
+    static class TarifaResponse {
+        private BigDecimal costoPorKm;
+        public BigDecimal getCostoPorKm() { return costoPorKm; }
+        public void setCostoPorKm(BigDecimal costoPorKm) { this.costoPorKm = costoPorKm; }
+    }
 
-                // Velocidad promedio de 60 km/h
-                BigDecimal velocidadPromedio = new BigDecimal("60");
-                BigDecimal tiempoTramo = distanciaKm.divide(velocidadPromedio, 2, RoundingMode.HALF_UP);
-
-                // Agregar tiempo de carga/descarga
-                BigDecimal tiempoCargaDescarga = new BigDecimal("2.0"); // 2 horas
-                tiempoTramo = tiempoTramo.add(tiempoCargaDescarga);
-
-                tiempoTotalHoras = tiempoTotalHoras.add(tiempoTramo);
-            }
+    static class CamionResponse {
+        private BigDecimal consumoCombustiblePorKm;
+        public BigDecimal getConsumoCombustiblePorKm() { return consumoCombustiblePorKm; }
+        public void setConsumoCombustiblePorKm(BigDecimal consumoCombustiblePorKm) {
+            this.consumoCombustiblePorKm = consumoCombustiblePorKm;
         }
-
-        return tiempoTotalHoras.setScale(1, RoundingMode.HALF_UP);
     }
 }

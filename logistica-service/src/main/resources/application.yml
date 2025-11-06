@@ -19,7 +19,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/transportista-realm
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
 
 server:
   port: 8082

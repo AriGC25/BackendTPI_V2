@@ -7,27 +7,19 @@ spring:
         - id: solicitudes-service
           uri: http://solicitudes-service:8081
           predicates:
-            - Path=/api/solicitudes/**
-          filters:
-            - StripPrefix=2
+            - Path=/solicitudes/**,/rutas/**,/tramos/**
         - id: logistica-service
           uri: http://logistica-service:8082
           predicates:
-            - Path=/api/logistica/**
-          filters:
-            - StripPrefix=2
+            - Path=/depositos/**,/camiones/**
         - id: tarifas-service
           uri: http://tarifas-service:8083
           predicates:
-            - Path=/api/tarifas/**
-          filters:
-            - StripPrefix=2
+            - Path=/tarifas/**
         - id: tracking-service
           uri: http://tracking-service:8084
           predicates:
-            - Path=/api/tracking/**
-          filters:
-            - StripPrefix=2
+            - Path=/tracking/**
       globalcors:
         cors-configurations:
           '[/**]':
@@ -38,19 +30,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/transportista-realm
-
-
-# URLs de los microservicios
-services:
-  solicitudes:
-    url: http://solicitudes-service:8081
-  logistica:
-    url: http://logistica-service:8082
-  tarifas:
-    url: http://tarifas-service:8083
-  tracking:
-    url: http://tracking-service:8084
+          jwk-set-uri: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+          issuer-uri: http://keycloak:8080/realms/transportista-realm
 
 server:
   port: 8000
@@ -59,6 +40,7 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
 
 management:
   endpoints:

@@ -1,1388 +1,1590 @@
 {
 	"info": {
-		"_postman_id": "transportista-tpi-2025",
-		"name": "TPI 2025 - Sistema Transportista - Endpoints Completos",
-		"description": "Colección completa de endpoints para el Sistema de Gestión de Transporte de Contenedores\n\n**Incluye todos los endpoints implementados:**\n- Solicitudes y Rutas\n- Tramos de transporte\n- Tarifas (NUEVO)\n- Logística (Depósitos y Camiones)\n- Tracking\n- Clientes\n\n**Autenticación automática con Keycloak configurada**",
+		"_postman_id": "transportista-completa-2025",
+		"name": "Sistema Transportista - Colección Completa por Roles",
+		"description": "Colección completa organizada por roles y requerimientos funcionales:\n\n**ROLES:**\n- CLIENTE: Registrar pedidos, consultar estados, ver costos\n- OPERADOR: Gestión completa del sistema\n- TRANSPORTISTA: Ver y gestionar sus tramos asignados\n\n**INSTRUCCIONES:**\n1. Configura las variables de entorno\n2. Obtén el token según el rol que quieras probar\n3. Ejecuta los endpoints correspondientes a ese rol",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
-	"item": [
-		{
-			"name": "🔐 Autenticación",
-			"item": [
-				{
-					"name": "Obtener Token - OPERADOR",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    pm.globals.set(\"operador_token\", jsonData.access_token);",
-									"    console.log(\"Token de operador guardado:\", jsonData.access_token.substring(0, 50) + \"...\");",
-									"} else {",
-									"    console.log(\"Error al obtener token:\", pm.response.text());",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/x-www-form-urlencoded"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "client_id",
-									"value": "backend-client"
-								},
-								{
-									"key": "client_secret",
-									"value": "backend-client-secret"
-								},
-								{
-									"key": "grant_type",
-									"value": "password"
-								},
-								{
-									"key": "username",
-									"value": "operador1"
-								},
-								{
-									"key": "password",
-									"value": "operador123"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
-							"host": [
-								"{{keycloak_url}}"
-							],
-							"path": [
-								"realms",
-								"transportista-realm",
-								"protocol",
-								"openid-connect",
-								"token"
-							]
-						}
-					}
-				},
-				{
-					"name": "Obtener Token - CLIENTE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    pm.globals.set(\"cliente_token\", jsonData.access_token);",
-									"    console.log(\"Token de cliente guardado:\", jsonData.access_token.substring(0, 50) + \"...\");",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/x-www-form-urlencoded"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "client_id",
-									"value": "backend-client"
-								},
-								{
-									"key": "client_secret",
-									"value": "backend-client-secret"
-								},
-								{
-									"key": "grant_type",
-									"value": "password"
-								},
-								{
-									"key": "username",
-									"value": "cliente1"
-								},
-								{
-									"key": "password",
-									"value": "cliente123"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
-							"host": [
-								"{{keycloak_url}}"
-							],
-							"path": [
-								"realms",
-								"transportista-realm",
-								"protocol",
-								"openid-connect",
-								"token"
-							]
-						}
-					}
-				},
-				{
-					"name": "Obtener Token - TRANSPORTISTA",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    pm.globals.set(\"transportista_token\", jsonData.access_token);",
-									"    console.log(\"Token de transportista guardado:\", jsonData.access_token.substring(0, 50) + \"...\");",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/x-www-form-urlencoded"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "client_id",
-									"value": "backend-client"
-								},
-								{
-									"key": "client_secret",
-									"value": "backend-client-secret"
-								},
-								{
-									"key": "grant_type",
-									"value": "password"
-								},
-								{
-									"key": "username",
-									"value": "transportista1"
-								},
-								{
-									"key": "password",
-									"value": "transportista123"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
-							"host": [
-								"{{keycloak_url}}"
-							],
-							"path": [
-								"realms",
-								"transportista-realm",
-								"protocol",
-								"openid-connect",
-								"token"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "📋 Solicitudes Service",
-			"item": [
-				{
-					"name": "Crear Solicitud",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"clienteId\": 1,\n  \"pesoContenedor\": 15000.0,\n  \"volumenContenedor\": 30.0,\n  \"descripcionContenedor\": \"Contenedor de prueba\",\n  \"direccionOrigen\": \"Av. Libertador 1000, CABA\",\n  \"latitudOrigen\": -34.5875,\n  \"longitudOrigen\": -58.4189,\n  \"direccionDestino\": \"Av. Corrientes 5000, CABA\",\n  \"latitudDestino\": -34.5995,\n  \"longitudDestino\": -58.4320\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Todas las Solicitudes",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes"
-							]
-						}
-					}
-				},
-				{
-					"name": "Obtener Solicitud por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "Filtrar Solicitudes por Estado",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes/estado/PENDIENTE",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes",
-								"estado",
-								"PENDIENTE"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Calcular Costo Total",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes/1/costo",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes",
-								"1",
-								"costo"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Calcular Tiempo Estimado",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes/1/tiempo-estimado",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes",
-								"1",
-								"tiempo-estimado"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Actualizar Estado de Solicitud",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/solicitudes/1/estado?estado=RUTA_ASIGNADA",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"solicitudes",
-								"1",
-								"estado"
-							],
-							"query": [
-								{
-									"key": "estado",
-									"value": "RUTA_ASIGNADA"
-								}
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🛣️ Rutas (NUEVO)",
-			"item": [
-				{
-					"name": "🆕 Consultar Rutas Tentativas",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/rutas/tentativas/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"rutas",
-								"tentativas",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Asignar Ruta a Solicitud",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"cantidadTramos\": 1,\n  \"cantidadDepositos\": 0\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/rutas/asignar/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"rutas",
-								"asignar",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Obtener Ruta por Solicitud",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/rutas/solicitud/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"rutas",
-								"solicitud",
-								"1"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🚛 Tramos (NUEVO)",
-			"item": [
-				{
-					"name": "🆕 Listar Todos los Tramos",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Ver Tramos por Transportista",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{transportista_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos/transportista/transportista1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos",
-								"transportista",
-								"transportista1"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Crear Tramo",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"rutaId\": 1,\n  \"tipoTramo\": \"ORIGEN_DESTINO\",\n  \"ordenTramo\": 1,\n  \"latitudOrigen\": -34.5875,\n  \"longitudOrigen\": -58.4189,\n  \"latitudDestino\": -34.5995,\n  \"longitudDestino\": -58.4320,\n  \"direccionOrigen\": \"Av. Libertador 1000, CABA\",\n  \"direccionDestino\": \"Av. Corrientes 5000, CABA\"\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Asignar Camión a Tramo",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos/1/asignar-camion?camionId=1&transportistaId=transportista1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos",
-								"1",
-								"asignar-camion"
-							],
-							"query": [
-								{
-									"key": "camionId",
-									"value": "1"
-								},
-								{
-									"key": "transportistaId",
-									"value": "transportista1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Iniciar Tramo",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{transportista_token}}"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos/1/iniciar",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos",
-								"1",
-								"iniciar"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Finalizar Tramo",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{transportista_token}}"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos/1/finalizar",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos",
-								"1",
-								"finalizar"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Obtener Tramo por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/solicitudes/tramos/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"solicitudes",
-								"tramos",
-								"1"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "💰 Tarifas Service (NUEVO)",
-			"item": [
-				{
-					"name": "🆕 Listar Todas las Tarifas",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Listar Tarifas Activas",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas/activas",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas",
-								"activas"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Crear Nueva Tarifa",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"tipoTramo\": \"ORIGEN_DESTINO\",\n  \"costoPorKm\": 120.00,\n  \"gestionFija\": 5000.00,\n  \"consumoCombustiblePorKm\": 0.35,\n  \"precioCombustiblePorLitro\": 150.00,\n  \"tarifaEstadiaDepositoPorDia\": 500.00\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Obtener Tarifa por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Obtener Tarifa por Tipo",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas/tipo/ORIGEN_DESTINO",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas",
-								"tipo",
-								"ORIGEN_DESTINO"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Actualizar Tarifa",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"tipoTramo\": \"ORIGEN_DESTINO\",\n  \"costoPorKm\": 130.00,\n  \"gestionFija\": 5500.00,\n  \"consumoCombustiblePorKm\": 0.35,\n  \"precioCombustiblePorLitro\": 160.00,\n  \"tarifaEstadiaDepositoPorDia\": 550.00\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "🆕 Eliminar Tarifa",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/tarifas/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"tarifas",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "Crear Cliente",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Cliente\",\n  \"apellido\": \"Uno\",\n  \"dni\": \"12345678\",\n  \"domicilio\": \"Calle 123\",\n  \"telefono\": \"123456789\",\n  \"email\": \"cliente1@example.com\"\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/clientes",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"clientes"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Clientes",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tarifas/clientes",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tarifas",
-								"clientes"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🏢 Logística Service",
-			"item": [
-				{
-					"name": "Crear Depósito",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Depósito Central\",\n  \"direccion\": \"Av. General Paz 1000\",\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"capacidadMaxima\": 100,\n  \"activo\": true\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/depositos",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"depositos"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Depósitos",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/depositos",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"depositos"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Depósitos Activos",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/depositos/activos",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"depositos",
-								"activos"
-							]
-						}
-					}
-				},
-				{
-					"name": "Crear Camión",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"patente\": \"ABC123\",\n  \"modelo\": \"Scania R450\",\n  \"capacidadPeso\": 25000.0,\n  \"capacidadVolumen\": 85.0,\n  \"disponible\": true,\n  \"costoPorKm\": 95.0\n}"
-						},
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/camiones",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"camiones"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Camiones",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/camiones",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"camiones"
-							]
-						}
-					}
-				},
-				{
-					"name": "Listar Camiones Disponibles",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{operador_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/logistica/camiones/disponibles",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"logistica",
-								"camiones",
-								"disponibles"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "📍 Tracking Service",
-			"item": [
-				{
-					"name": "Historial por Contenedor",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{cliente_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tracking/tracking/contenedor/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tracking",
-								"tracking",
-								"contenedor",
-								"1"
-							]
-						}
-					}
-				},
-				{
-					"name": "Historial por Solicitud",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{cliente_token}}"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/api/tracking/tracking/solicitud/1",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"api",
-								"tracking",
-								"tracking",
-								"solicitud",
-								"1"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🩺 Health Checks",
-			"item": [
-				{
-					"name": "API Gateway Health",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_gateway}}/actuator/health",
-							"host": [
-								"{{api_gateway}}"
-							],
-							"path": [
-								"actuator",
-								"health"
-							]
-						}
-					}
-				},
-				{
-					"name": "Solicitudes Service Health",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8081/actuator/health",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8081",
-							"path": [
-								"actuator",
-								"health"
-							]
-						}
-					}
-				},
-				{
-					"name": "Keycloak Health",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{keycloak_url}}/health",
-							"host": [
-								"{{keycloak_url}}"
-							],
-							"path": [
-								"health"
-							]
-						}
-					}
-				}
-			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
 	"variable": [
 		{
-			"key": "api_gateway",
+			"key": "base_url",
 			"value": "http://localhost:8000",
-			"type": "string"
+			"type": "default"
 		},
 		{
 			"key": "keycloak_url",
 			"value": "http://localhost:8080",
-			"type": "string"
+			"type": "default"
+		}
+	],
+	"item": [
+		{
+			"name": "0. Configuración Inicial",
+			"description": "Variables de entorno y autenticación",
+			"item": [
+				{
+					"name": "Info - Variables Necesarias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "**Variables requeridas:**\n\n- base_url: http://localhost:8000\n- keycloak_url: http://localhost:8080\n\n**Usuarios disponibles:**\n\n1. CLIENTE:\n   - usuario: cliente1\n   - password: cliente123\n\n2. OPERADOR:\n   - usuario: operador1\n   - password: operador123\n\n3. TRANSPORTISTA:\n   - usuario: transportista1\n   - password: transportista123"
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"key": "operador_token",
-			"value": "",
-			"type": "string"
+			"name": "1. Autenticación",
+			"description": "Obtención de tokens JWT por rol",
+			"item": [
+				{
+					"name": "Login - CLIENTE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('cliente_token', jsonData.access_token);",
+									"    pm.environment.set('token', jsonData.access_token);",
+									"    console.log('✅ Token CLIENTE guardado');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "backend-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "backend-client-secret",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "cliente1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "cliente123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+							"host": ["{{keycloak_url}}"],
+							"path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+						},
+						"description": "Obtiene token para usuario con rol CLIENTE"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - OPERADOR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('operador_token', jsonData.access_token);",
+									"    pm.environment.set('token', jsonData.access_token);",
+									"    console.log('✅ Token OPERADOR guardado');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "backend-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "backend-client-secret",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "operador1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "operador123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+							"host": ["{{keycloak_url}}"],
+							"path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+						},
+						"description": "Obtiene token para usuario con rol OPERADOR"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - TRANSPORTISTA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('transportista_token', jsonData.access_token);",
+									"    pm.environment.set('token', jsonData.access_token);",
+									"    console.log('✅ Token TRANSPORTISTA guardado');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "backend-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "backend-client-secret",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "transportista1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "transportista123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+							"host": ["{{keycloak_url}}"],
+							"path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+						},
+						"description": "Obtiene token para usuario con rol TRANSPORTISTA"
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"key": "cliente_token",
-			"value": "",
-			"type": "string"
+			"name": "2. ROL CLIENTE",
+			"description": "Endpoints para usuarios con rol CLIENTE",
+			"item": [
+				{
+					"name": "RF1 - Registrar Nueva Solicitud de Transporte",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('solicitud_id', jsonData.id);",
+									"    pm.environment.set('contenedor_id', jsonData.contenedorId);",
+									"    pm.environment.set('numero_solicitud', jsonData.numeroSolicitud);",
+									"    console.log('✅ Solicitud creada - ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clienteId\": 1,\n  \"pesoContenedor\": 1500.50,\n  \"volumenContenedor\": 25.75,\n  \"descripcionContenedor\": \"Contenedor con productos electrónicos\",\n  \"direccionOrigen\": \"Av. Libertador 1000, Buenos Aires\",\n  \"latitudOrigen\": -34.5881,\n  \"longitudOrigen\": -58.3974,\n  \"direccionDestino\": \"Calle Principal 500, Córdoba\",\n  \"latitudDestino\": -31.4201,\n  \"longitudDestino\": -64.1888\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/solicitudes",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes"]
+						},
+						"description": "**RF1: Registrar nueva solicitud de transporte**\n\nIncluye:\n- Creación del contenedor con identificación única\n- Registro del cliente si no existe\n- Estado inicial: BORRADOR"
+					},
+					"response": []
+				},
+				{
+					"name": "RF2 - Consultar Estado de Contenedor (Tracking)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tracking/contenedor/{{contenedor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["tracking", "contenedor", "{{contenedor_id}}"]
+						},
+						"description": "**RF2: Consultar estado del transporte de un contenedor**\n\nMuestra el historial completo de eventos del contenedor"
+					},
+					"response": []
+				},
+				{
+					"name": "RF2 - Consultar Estado de Solicitud",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/solicitudes/{{solicitud_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes", "{{solicitud_id}}"]
+						},
+						"description": "**RF2: Consultar estado de la solicitud**\n\nMuestra información completa de la solicitud incluyendo estado actual"
+					},
+					"response": []
+				},
+				{
+					"name": "RF8 - Ver Costo Total Estimado",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/solicitudes/{{solicitud_id}}/costo",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes", "{{solicitud_id}}", "costo"]
+						},
+						"description": "**RF8: Calcular costo total de la entrega**\n\nIncluye:\n- Recorrido total (distancias)\n- Peso y volumen del contenedor\n- Estadía en depósitos (si aplica)"
+					},
+					"response": []
+				},
+				{
+					"name": "RF8 - Ver Tiempo Estimado de Entrega",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/solicitudes/{{solicitud_id}}/tiempo-estimado",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes", "{{solicitud_id}}", "tiempo-estimado"]
+						},
+						"description": "**RF8: Ver tiempo estimado de entrega**\n\nMuestra el tiempo estimado en horas y días"
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Solicitud por Número",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/solicitudes/numero/{{numero_solicitud}}",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes", "numero", "{{numero_solicitud}}"]
+						},
+						"description": "Consultar solicitud usando el número de solicitud en lugar del ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Ruta Asignada",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{cliente_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/rutas/solicitud/{{solicitud_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["rutas", "solicitud", "{{solicitud_id}}"]
+						},
+						"description": "Ver la ruta asignada a la solicitud con todos sus tramos"
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"key": "transportista_token",
-			"value": "",
-			"type": "string"
+			"name": "3. ROL OPERADOR",
+			"description": "Endpoints para usuarios con rol OPERADOR",
+			"item": [
+				{
+					"name": "3.1 Gestión de Solicitudes",
+					"item": [
+						{
+							"name": "RF1 - Crear Solicitud (como Operador)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('solicitud_id', jsonData.id);",
+											"    pm.environment.set('contenedor_id', jsonData.contenedorId);",
+											"    console.log('✅ Solicitud creada - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"clienteId\": 1,\n  \"pesoContenedor\": 2000.00,\n  \"volumenContenedor\": 30.00,\n  \"descripcionContenedor\": \"Contenedor con maquinaria pesada\",\n  \"direccionOrigen\": \"Zona Industrial Norte, Rosario\",\n  \"latitudOrigen\": -32.9468,\n  \"longitudOrigen\": -60.6393,\n  \"direccionDestino\": \"Puerto de Buenos Aires\",\n  \"latitudDestino\": -34.6037,\n  \"longitudDestino\": -58.3816\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/solicitudes",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes"]
+								},
+								"description": "El operador puede crear solicitudes en nombre de clientes"
+							},
+							"response": []
+						},
+						{
+							"name": "RF5 - Listar Todas las Solicitudes",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/solicitudes",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes"]
+								},
+								"description": "**RF5: Consultar todos los contenedores**\n\nLista todas las solicitudes del sistema"
+							},
+							"response": []
+						},
+						{
+							"name": "RF5 - Filtrar Solicitudes por Estado",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/solicitudes/estado/EN_TRANSITO",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes", "estado", "EN_TRANSITO"]
+								},
+								"description": "**RF5: Filtrar contenedores por estado**\n\nEstados disponibles:\n- BORRADOR\n- PROGRAMADA\n- EN_TRANSITO\n- ENTREGADA\n- CANCELADA"
+							},
+							"response": []
+						},
+						{
+							"name": "Actualizar Estado de Solicitud",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/solicitudes/{{solicitud_id}}/estado?estado=PROGRAMADA",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes", "{{solicitud_id}}", "estado"],
+									"query": [
+										{
+											"key": "estado",
+											"value": "PROGRAMADA"
+										}
+									]
+								},
+								"description": "Cambiar el estado de una solicitud"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.2 Gestión de Rutas",
+					"item": [
+						{
+							"name": "RF3 - Consultar Rutas Tentativas",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/rutas/tentativas/{{solicitud_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["rutas", "tentativas", "{{solicitud_id}}"]
+								},
+								"description": "**RF3: Consultar rutas tentativas**\n\nMuestra todas las opciones de ruta con:\n- Tramos sugeridos\n- Tiempo estimado\n- Costo estimado"
+							},
+							"response": []
+						},
+						{
+							"name": "RF4 - Asignar Ruta a Solicitud",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('ruta_id', jsonData.id);",
+											"    console.log('✅ Ruta asignada - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"solicitudId\": {{solicitud_id}},\n  \"cantidadTramos\": 2,\n  \"cantidadDepositos\": 1,\n  \"tramos\": []\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/rutas/asignar/{{solicitud_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["rutas", "asignar", "{{solicitud_id}}"]
+								},
+								"description": "**RF4: Asignar ruta definitiva a solicitud**\n\nAsigna una de las rutas tentativas como ruta definitiva"
+							},
+							"response": []
+						},
+						{
+							"name": "Ver Ruta Asignada",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/rutas/solicitud/{{solicitud_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["rutas", "solicitud", "{{solicitud_id}}"]
+								},
+								"description": "Ver la ruta asignada a una solicitud"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.3 Gestión de Tramos",
+					"item": [
+						{
+							"name": "Listar Todos los Tramos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tramos",
+									"host": ["{{base_url}}"],
+									"path": ["tramos"]
+								},
+								"description": "Lista todos los tramos del sistema"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Nuevo Tramo",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('tramo_id', jsonData.id);",
+											"    console.log('✅ Tramo creado - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"rutaId\": {{ruta_id}},\n  \"numeroOrden\": 1,\n  \"direccionOrigen\": \"Punto de origen\",\n  \"latitudOrigen\": -34.5881,\n  \"longitudOrigen\": -58.3974,\n  \"direccionDestino\": \"Depósito Central\",\n  \"latitudDestino\": -34.6037,\n  \"longitudDestino\": -58.3816,\n  \"tipo\": \"ORIGEN_DEPOSITO\",\n  \"depositoDestinoId\": 1,\n  \"distanciaKm\": 25.5,\n  \"costoEstimado\": 5000.00\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/tramos",
+									"host": ["{{base_url}}"],
+									"path": ["tramos"]
+								},
+								"description": "Crear un nuevo tramo en una ruta"
+							},
+							"response": []
+						},
+						{
+							"name": "RF6 - Asignar Camión a Tramo",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tramos/{{tramo_id}}/asignar-camion?camionId=1&transportistaId=transportista1",
+									"host": ["{{base_url}}"],
+									"path": ["tramos", "{{tramo_id}}", "asignar-camion"],
+									"query": [
+										{
+											"key": "camionId",
+											"value": "1"
+										},
+										{
+											"key": "transportistaId",
+											"value": "transportista1"
+										}
+									]
+								},
+								"description": "**RF6: Asignar camión a un tramo de traslado**\n\nValida la capacidad del camión antes de asignar"
+							},
+							"response": []
+						},
+						{
+							"name": "Ver Tramos por Transportista",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tramos/transportista/transportista1",
+									"host": ["{{base_url}}"],
+									"path": ["tramos", "transportista", "transportista1"]
+								},
+								"description": "Ver todos los tramos asignados a un transportista específico"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.4 Gestión de Depósitos",
+					"item": [
+						{
+							"name": "RF10 - Crear Depósito",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('deposito_id', jsonData.id);",
+											"    console.log('✅ Depósito creado - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"Depósito Central Norte\",\n  \"direccion\": \"Ruta 9 Km 45, Rosario\",\n  \"latitud\": -32.9468,\n  \"longitud\": -60.6393,\n  \"capacidadMaxima\": 100,\n  \"capacidadActual\": 0,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/depositos",
+									"host": ["{{base_url}}"],
+									"path": ["depositos"]
+								},
+								"description": "**RF10: Registrar nuevo depósito**"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Depósitos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/depositos",
+									"host": ["{{base_url}}"],
+									"path": ["depositos"]
+								},
+								"description": "Lista todos los depósitos"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Depósitos Activos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/depositos/activos",
+									"host": ["{{base_url}}"],
+									"path": ["depositos", "activos"]
+								},
+								"description": "Lista solo depósitos activos"
+							},
+							"response": []
+						},
+						{
+							"name": "RF10 - Actualizar Depósito",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"Depósito Central Norte - Ampliado\",\n  \"direccion\": \"Ruta 9 Km 45, Rosario\",\n  \"latitud\": -32.9468,\n  \"longitud\": -60.6393,\n  \"capacidadMaxima\": 150,\n  \"capacidadActual\": 25,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/depositos/{{deposito_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["depositos", "{{deposito_id}}"]
+								},
+								"description": "**RF10: Actualizar información de depósito**"
+							},
+							"response": []
+						},
+						{
+							"name": "Eliminar Depósito",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/depositos/{{deposito_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["depositos", "{{deposito_id}}"]
+								},
+								"description": "Desactiva un depósito (borrado lógico)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.5 Gestión de Camiones",
+					"item": [
+						{
+							"name": "RF10 - Crear Camión",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('camion_id', jsonData.id);",
+											"    console.log('✅ Camión creado - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"patente\": \"AB123CD\",\n  \"transportista\": \"Transportes Rápidos SA\",\n  \"capacidadPeso\": 5000.00,\n  \"capacidadVolumen\": 50.00,\n  \"costoPorKm\": 150.00,\n  \"disponible\": true,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/camiones",
+									"host": ["{{base_url}}"],
+									"path": ["camiones"]
+								},
+								"description": "**RF10: Registrar nuevo camión**"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Camiones",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/camiones",
+									"host": ["{{base_url}}"],
+									"path": ["camiones"]
+								},
+								"description": "Lista todos los camiones"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Camiones Disponibles",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/camiones/disponibles",
+									"host": ["{{base_url}}"],
+									"path": ["camiones", "disponibles"]
+								},
+								"description": "Lista solo camiones disponibles para asignar"
+							},
+							"response": []
+						},
+						{
+							"name": "RF10 - Actualizar Camión",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"patente\": \"AB123CD\",\n  \"transportista\": \"Transportes Rápidos SA\",\n  \"capacidadPeso\": 5500.00,\n  \"capacidadVolumen\": 55.00,\n  \"costoPorKm\": 160.00,\n  \"disponible\": true,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/camiones/{{camion_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["camiones", "{{camion_id}}"]
+								},
+								"description": "**RF10: Actualizar información de camión**"
+							},
+							"response": []
+						},
+						{
+							"name": "Eliminar Camión",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/camiones/{{camion_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["camiones", "{{camion_id}}"]
+								},
+								"description": "Desactiva un camión (borrado lógico)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.6 Gestión de Tarifas",
+					"item": [
+						{
+							"name": "RF10 - Crear Tarifa",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('tarifa_id', jsonData.id);",
+											"    console.log('✅ Tarifa creada - ID:', jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tipoTramo\": \"ORIGEN_DEPOSITO\",\n  \"costoPorKm\": 120.00,\n  \"gestionFija\": 500.00,\n  \"consumoCombustiblePorKm\": 0.35,\n  \"precioCombustiblePorLitro\": 450.00,\n  \"tarifaEstadiaDepositoPorDia\": 200.00,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/tarifas",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas"]
+								},
+								"description": "**RF10: Crear nueva tarifa**\n\nTipos de tramo:\n- ORIGEN_DEPOSITO\n- DEPOSITO_DEPOSITO\n- DEPOSITO_DESTINO\n- ORIGEN_DESTINO"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Tarifas",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tarifas",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas"]
+								},
+								"description": "Lista todas las tarifas"
+							},
+							"response": []
+						},
+						{
+							"name": "Listar Tarifas Activas",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tarifas/activas",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas", "activas"]
+								},
+								"description": "Lista solo tarifas activas"
+							},
+							"response": []
+						},
+						{
+							"name": "Obtener Tarifa por Tipo",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tarifas/tipo/ORIGEN_DEPOSITO",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas", "tipo", "ORIGEN_DEPOSITO"]
+								},
+								"description": "Obtiene la tarifa activa para un tipo de tramo específico"
+							},
+							"response": []
+						},
+						{
+							"name": "RF10 - Actualizar Tarifa",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tipoTramo\": \"ORIGEN_DEPOSITO\",\n  \"costoPorKm\": 130.00,\n  \"gestionFija\": 550.00,\n  \"consumoCombustiblePorKm\": 0.38,\n  \"precioCombustiblePorLitro\": 480.00,\n  \"tarifaEstadiaDepositoPorDia\": 220.00,\n  \"activo\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/tarifas/{{tarifa_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas", "{{tarifa_id}}"]
+								},
+								"description": "**RF10: Actualizar parámetros de tarifación**"
+							},
+							"response": []
+						},
+						{
+							"name": "Desactivar Tarifa",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tarifas/{{tarifa_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["tarifas", "{{tarifa_id}}"]
+								},
+								"description": "Desactiva una tarifa (borrado lógico)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3.7 Tracking y Costos",
+					"item": [
+						{
+							"name": "Ver Tracking de Contenedor",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tracking/contenedor/{{contenedor_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["tracking", "contenedor", "{{contenedor_id}}"]
+								},
+								"description": "Ver historial de tracking de un contenedor"
+							},
+							"response": []
+						},
+						{
+							"name": "Ver Tracking de Solicitud",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tracking/solicitud/{{solicitud_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["tracking", "solicitud", "{{solicitud_id}}"]
+								},
+								"description": "Ver historial de tracking de una solicitud"
+							},
+							"response": []
+						},
+						{
+							"name": "RF8 y RF9 - Calcular Costo Total",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/solicitudes/{{solicitud_id}}/costo",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes", "{{solicitud_id}}", "costo"]
+								},
+								"description": "**RF8: Calcular costo total**\n**RF9: Registra costos reales al finalizar**\n\nIncluye todos los factores de costo"
+							},
+							"response": []
+						},
+						{
+							"name": "Calcular Tiempo Estimado",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{operador_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/solicitudes/{{solicitud_id}}/tiempo-estimado",
+									"host": ["{{base_url}}"],
+									"path": ["solicitudes", "{{solicitud_id}}", "tiempo-estimado"]
+								},
+								"description": "**RF9: Calcular tiempo real de entrega**"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "4. ROL TRANSPORTISTA",
+			"description": "Endpoints para usuarios con rol TRANSPORTISTA",
+			"item": [
+				{
+					"name": "Ver Mis Tramos Asignados",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tramos/transportista/transportista1",
+							"host": ["{{base_url}}"],
+							"path": ["tramos", "transportista", "transportista1"]
+						},
+						"description": "Ver todos los tramos asignados al transportista actual"
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Detalle de Tramo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tramos/{{tramo_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["tramos", "{{tramo_id}}"]
+						},
+						"description": "Ver detalles de un tramo específico"
+					},
+					"response": []
+				},
+				{
+					"name": "RF7 - Iniciar Tramo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tramos/{{tramo_id}}/iniciar",
+							"host": ["{{base_url}}"],
+							"path": ["tramos", "{{tramo_id}}", "iniciar"]
+						},
+						"description": "**RF7: Registrar inicio de tramo**\n\nRegistra la fecha y hora de inicio del tramo"
+					},
+					"response": []
+				},
+				{
+					"name": "RF7 - Finalizar Tramo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tramos/{{tramo_id}}/finalizar",
+							"host": ["{{base_url}}"],
+							"path": ["tramos", "{{tramo_id}}", "finalizar"]
+						},
+						"description": "**RF7: Registrar fin de tramo**\n\nRegistra la fecha y hora de finalización del tramo.\nCalcula el tiempo real de estadía si es un depósito."
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Tracking de Solicitud",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tracking/solicitud/{{solicitud_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["tracking", "solicitud", "{{solicitud_id}}"]
+						},
+						"description": "Ver el estado y eventos de la solicitud que está transportando"
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Tracking de Contenedor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tracking/contenedor/{{contenedor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["tracking", "contenedor", "{{contenedor_id}}"]
+						},
+						"description": "Ver el historial del contenedor que está transportando"
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Información de Solicitud",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{transportista_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/solicitudes/{{solicitud_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["solicitudes", "{{solicitud_id}}"]
+						},
+						"description": "Ver información completa de la solicitud"
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

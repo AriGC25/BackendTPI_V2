@@ -3,7 +3,6 @@ package com.transportista.tarifas.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,7 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -37,20 +36,17 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html", "/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
 
-                        // Clientes: OPERADOR puede hacer todo, CLIENTE puede registrarse y ver su propio perfil
-                        .requestMatchers(HttpMethod.POST, "/clientes").hasAnyRole("OPERADOR", "CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("OPERADOR", "CLIENTE")
+                        // === CLIENTES ===
+                        .requestMatchers(HttpMethod.POST, "/clientes", "/clientes/**").hasAnyRole("OPERADOR", "CLIENTE")
+                        .requestMatchers(HttpMethod.GET, "/clientes", "/clientes/**").hasAnyRole("OPERADOR", "CLIENTE")
                         .requestMatchers(HttpMethod.PUT, "/clientes/**").hasRole("OPERADOR")
                         .requestMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("OPERADOR")
 
-                        // Tarifas: OPERADOR puede gestionar, CLIENTE puede consultar
-                        .requestMatchers(HttpMethod.GET, "/tarifas/**").hasAnyRole("OPERADOR", "CLIENTE")
-                        .requestMatchers(HttpMethod.POST, "/tarifas/**").hasRole("OPERADOR")
+                        // === TARIFAS ===
+                        .requestMatchers(HttpMethod.GET, "/tarifas", "/tarifas/**").hasAnyRole("OPERADOR", "CLIENTE")
+                        .requestMatchers(HttpMethod.POST, "/tarifas", "/tarifas/**").hasRole("OPERADOR")
                         .requestMatchers(HttpMethod.PUT, "/tarifas/**").hasRole("OPERADOR")
                         .requestMatchers(HttpMethod.DELETE, "/tarifas/**").hasRole("OPERADOR")
-
-                        // Cálculos: solo OPERADOR
-                        .requestMatchers("/calculos/**").hasRole("OPERADOR")
 
                         .anyRequest().authenticated()
                 )
@@ -80,17 +76,29 @@ public class SecurityConfig {
     }
 
     @Bean
-    public org.springframework.core.convert.converter.Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
-        return jwt -> {
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-            List<String> roles = realmAccess != null ? (List<String>) realmAccess.get("roles") : Collections.emptyList();
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+        return converter;
+    }
 
-            List<GrantedAuthority> authorities = roles.stream()
-                    .map(r -> "ROLE_" + r.toUpperCase())
+    static class KeycloakRoleConverter implements org.springframework.core.convert.converter.Converter<Jwt, Collection<GrantedAuthority>> {
+        @Override
+        public Collection<GrantedAuthority> convert(Jwt jwt) {
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess == null) {
+                return Collections.emptyList();
+            }
+
+            List<String> roles = (List<String>) realmAccess.get("roles");
+            if (roles == null) {
+                return Collections.emptyList();
+            }
+
+            return roles.stream()
+                    .map(role -> "ROLE_" + role.toUpperCase())
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-
-            return new JwtAuthenticationToken(jwt, authorities);
-        };
+        }
     }
 }

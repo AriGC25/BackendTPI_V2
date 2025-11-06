@@ -3,7 +3,6 @@ package com.transportista.solicitudes.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,7 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -33,31 +32,36 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        // Endpoints públicos (documentación, health checks)
+                        // Endpoints públicos
                         .requestMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html", "/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
 
+                        // === SOLICITUDES ===
                         // Crear solicitud: CLIENTE y OPERADOR
-                        .requestMatchers(HttpMethod.POST, "/solicitudes").hasAnyRole("CLIENTE", "OPERADOR")
+                        .requestMatchers(HttpMethod.POST, "/solicitudes", "/solicitudes/**").hasAnyRole("CLIENTE", "OPERADOR")
 
-                        // Consultar solicitudes individuales: CLIENTE, OPERADOR y TRANSPORTISTA
-                        .requestMatchers(HttpMethod.GET, "/solicitudes/{id}", "/solicitudes/numero/**", "/solicitudes/cliente/**")
+                        // Consultar solicitudes individuales: TODOS los roles autenticados
+                        .requestMatchers(HttpMethod.GET, "/solicitudes/*", "/solicitudes/numero/**", "/solicitudes/cliente/**",
+                                "/solicitudes/*/costo", "/solicitudes/*/tiempo-estimado")
                         .hasAnyRole("CLIENTE", "OPERADOR", "TRANSPORTISTA")
 
-                        // Listar todas las solicitudes y filtros: solo OPERADOR
+                        // Listar todas y filtros: solo OPERADOR
                         .requestMatchers(HttpMethod.GET, "/solicitudes", "/solicitudes/estado/**").hasRole("OPERADOR")
 
-                        // Rutas y asignaciones: OPERADOR y TRANSPORTISTA
-                        .requestMatchers(HttpMethod.GET, "/rutas/**").hasAnyRole("OPERADOR", "TRANSPORTISTA")
-                        .requestMatchers(HttpMethod.POST, "/rutas/**").hasRole("OPERADOR")
-                        .requestMatchers(HttpMethod.PUT, "/rutas/**").hasRole("OPERADOR")
+                        // Actualizar estado: solo OPERADOR
+                        .requestMatchers(HttpMethod.PUT, "/solicitudes/**").hasRole("OPERADOR")
 
-                        // Tramos: OPERADOR puede gestionar, TRANSPORTISTA puede actualizar estado
-                        .requestMatchers(HttpMethod.GET, "/tramos/**").hasAnyRole("OPERADOR", "TRANSPORTISTA")
-                        .requestMatchers(HttpMethod.POST, "/tramos/**").hasRole("OPERADOR")
+                        // === RUTAS ===
+                        .requestMatchers(HttpMethod.GET, "/rutas/**").hasAnyRole("OPERADOR", "CLIENTE")
+                        .requestMatchers(HttpMethod.POST, "/rutas/**").hasRole("OPERADOR")
+
+                        // === TRAMOS ===
+                        .requestMatchers(HttpMethod.GET, "/tramos", "/tramos/*", "/tramos/transportista/**")
+                        .hasAnyRole("OPERADOR", "TRANSPORTISTA")
+                        .requestMatchers(HttpMethod.POST, "/tramos", "/tramos/**").hasRole("OPERADOR")
+                        .requestMatchers(HttpMethod.PUT, "/tramos/*/asignar-camion").hasRole("OPERADOR")
                         .requestMatchers(HttpMethod.PUT, "/tramos/*/iniciar", "/tramos/*/finalizar")
                         .hasAnyRole("OPERADOR", "TRANSPORTISTA")
-                        .requestMatchers(HttpMethod.PUT, "/tramos/**").hasRole("OPERADOR")
 
                         .anyRequest().authenticated()
                 )
@@ -87,17 +91,29 @@ public class SecurityConfig {
     }
 
     @Bean
-    public org.springframework.core.convert.converter.Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
-        return jwt -> {
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-            List<String> roles = realmAccess != null ? (List<String>) realmAccess.get("roles") : Collections.emptyList();
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+        return converter;
+    }
 
-            List<GrantedAuthority> authorities = roles.stream()
-                    .map(r -> "ROLE_" + r.toUpperCase())
+    static class KeycloakRoleConverter implements org.springframework.core.convert.converter.Converter<Jwt, Collection<GrantedAuthority>> {
+        @Override
+        public Collection<GrantedAuthority> convert(Jwt jwt) {
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess == null) {
+                return Collections.emptyList();
+            }
+
+            List<String> roles = (List<String>) realmAccess.get("roles");
+            if (roles == null) {
+                return Collections.emptyList();
+            }
+
+            return roles.stream()
+                    .map(role -> "ROLE_" + role.toUpperCase())
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-
-            return new JwtAuthenticationToken(jwt, authorities);
-        };
+        }
     }
 }

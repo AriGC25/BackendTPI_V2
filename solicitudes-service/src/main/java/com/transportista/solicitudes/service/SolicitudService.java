@@ -35,6 +35,9 @@ public class SolicitudService {
 
         // Crear solicitud
         Solicitud solicitud = new Solicitud();
+        // Generar número de solicitud único
+        String numero = "SOL-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        solicitud.setNumeroSolicitud(numero);
         solicitud.setContenedor(contenedor);
         solicitud.setClienteId(dto.getClienteId());
         solicitud.setDireccionOrigen(dto.getDireccionOrigen());
@@ -85,7 +88,8 @@ public class SolicitudService {
     }
 
     public List<SolicitudResponseDTO> listarSolicitudesPorEstado(String estado) {
-        List<Solicitud> solicitudes = solicitudRepository.findByEstado(estado);
+        String normalized = estado == null ? "" : estado.trim().toUpperCase();
+        List<Solicitud> solicitudes = solicitudRepository.findByEstado(normalized);
         return solicitudes.stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());

@@ -15,11 +15,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
 
 server:
   port: 8082

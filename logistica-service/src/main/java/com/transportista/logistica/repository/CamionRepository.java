@@ -14,7 +14,5 @@ public interface CamionRepository extends JpaRepository<Camion, Long> {
     
     List<Camion> findAllByDisponibleTrueAndActivoTrue();
     
-    List<Camion> findAllByTransportista(String transportista);
-    
     boolean existsByPatente(String patente);
 }

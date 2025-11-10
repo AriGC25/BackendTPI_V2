@@ -39,7 +39,7 @@ public class SolicitudController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Obtener solicitud", description = "Obtiene una solicitud por su ID")
-    public ResponseEntity<SolicitudResponseDTO> obtenerSolicitud(@PathVariable Long id) {
+    public ResponseEntity<SolicitudResponseDTO> obtenerSolicitud(@PathVariable("id") Long id) {
         SolicitudResponseDTO solicitud = solicitudService.obtenerSolicitud(id);
         return ResponseEntity.ok(solicitud);
     }
@@ -47,7 +47,7 @@ public class SolicitudController {
     @GetMapping("/numero/{numeroSolicitud}")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Obtener solicitud por número", description = "Obtiene una solicitud por su número")
-    public ResponseEntity<SolicitudResponseDTO> obtenerSolicitudPorNumero(@PathVariable String numeroSolicitud) {
+    public ResponseEntity<SolicitudResponseDTO> obtenerSolicitudPorNumero(@PathVariable("numeroSolicitud") String numeroSolicitud) {
         SolicitudResponseDTO solicitud = solicitudService.obtenerSolicitudPorNumero(numeroSolicitud);
         return ResponseEntity.ok(solicitud);
     }
@@ -63,15 +63,23 @@ public class SolicitudController {
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Filtrar solicitudes por estado", description = "Obtiene solicitudes filtradas por estado")
-    public ResponseEntity<List<SolicitudResponseDTO>> listarSolicitudesPorEstado(@PathVariable String estado) {
+    public ResponseEntity<List<SolicitudResponseDTO>> listarSolicitudesPorEstado(@PathVariable("estado") String estado) {
         List<SolicitudResponseDTO> solicitudes = solicitudService.listarSolicitudesPorEstado(estado);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    @PreAuthorize("hasAnyRole('CLIENTE','OPERADOR')")
+    @Operation(summary = "Listar solicitudes por cliente", description = "Lista todas las solicitudes de un cliente por su ID")
+    public ResponseEntity<List<SolicitudResponseDTO>> listarSolicitudesPorCliente(@PathVariable("clienteId") Long clienteId) {
+        List<SolicitudResponseDTO> solicitudes = solicitudService.listarSolicitudesPorCliente(clienteId);
         return ResponseEntity.ok(solicitudes);
     }
 
     @GetMapping("/{id}/costo")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR')")
     @Operation(summary = "Calcular costo total", description = "Calcula el costo total de la solicitud incluyendo distancia, combustible, estadía y factores de peso/volumen")
-    public ResponseEntity<Map<String, Object>> calcularCostoTotal(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> calcularCostoTotal(@PathVariable("id") Long id) {
         BigDecimal costoTotal = calculoCostoService.calcularCostoTotal(id);
         BigDecimal tiempoEstimado = calculoCostoService.calcularTiempoEstimado(id);
 
@@ -88,7 +96,7 @@ public class SolicitudController {
     @GetMapping("/{id}/tiempo-estimado")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR')")
     @Operation(summary = "Calcular tiempo estimado", description = "Calcula el tiempo estimado de entrega basado en distancias y velocidad promedio")
-    public ResponseEntity<Map<String, Object>> calcularTiempoEstimado(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> calcularTiempoEstimado(@PathVariable("id") Long id) {
         BigDecimal tiempoEstimado = calculoCostoService.calcularTiempoEstimado(id);
 
         Map<String, Object> resultado = Map.of(
@@ -103,7 +111,7 @@ public class SolicitudController {
     @PutMapping("/{id}/estado")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Actualizar estado de solicitud", description = "Actualiza el estado de una solicitud")
-    public ResponseEntity<SolicitudResponseDTO> actualizarEstado(@PathVariable Long id, @RequestParam String estado) {
+    public ResponseEntity<SolicitudResponseDTO> actualizarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado) {
         SolicitudResponseDTO solicitudActualizada = solicitudService.actualizarEstado(id, estado);
         return ResponseEntity.ok(solicitudActualizada);
     }

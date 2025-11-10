@@ -4,34 +4,68 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: solicitudes-service
+        # RUTAS DIRECTAS - Sin prefijo /api/
+        - id: solicitudes-service-direct
           uri: http://solicitudes-service:8081
           predicates:
             - Path=/solicitudes/**,/rutas/**,/tramos/**
-        - id: logistica-service
+          filters:
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: logistica-service-direct
           uri: http://logistica-service:8082
           predicates:
             - Path=/depositos/**,/camiones/**
-        - id: tarifas-service
+          filters:
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: tarifas-service-direct
           uri: http://tarifas-service:8083
           predicates:
-            - Path=/tarifas/**
-        - id: tracking-service
+            - Path=/tarifas/**,/clientes/**
+          filters:
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: tracking-service-direct
           uri: http://tracking-service:8084
           predicates:
             - Path=/tracking/**
+          filters:
+            - AddRequestHeader=X-Gateway,API-Gateway
+
+        # RUTAS CON PREFIJO /api/ - StripPrefix para quitar solo /api
+        - id: solicitudes-service-api
+          uri: http://solicitudes-service:8081
+          predicates:
+            - Path=/api/solicitudes/**,/api/rutas/**,/api/tramos/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: logistica-service-api
+          uri: http://logistica-service:8082
+          predicates:
+            - Path=/api/depositos/**,/api/camiones/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: tarifas-service-api
+          uri: http://tarifas-service:8083
+          predicates:
+            - Path=/api/tarifas/**,/api/clientes/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Gateway,API-Gateway
+        - id: tracking-service-api
+          uri: http://tracking-service:8084
+          predicates:
+            - Path=/api/tracking/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Gateway,API-Gateway
+
       globalcors:
         cors-configurations:
           '[/**]':
             allowedOrigins: "*"
             allowedMethods: "*"
             allowedHeaders: "*"
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
-          issuer-uri: http://keycloak:8080/realms/transportista-realm
 
 server:
   port: 8000
@@ -39,8 +73,7 @@ server:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2.jwt: DEBUG
+    org.springframework.web: DEBUG
 
 management:
   endpoints:

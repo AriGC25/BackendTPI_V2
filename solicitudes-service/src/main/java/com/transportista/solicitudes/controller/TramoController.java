@@ -32,14 +32,14 @@ public class TramoController {
     @GetMapping("/transportista/{transportistaId}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Ver tramos asignados a un transportista")
-    public ResponseEntity<List<TramoDTO>> verTramosAsignados(@PathVariable String transportistaId) {
+    public ResponseEntity<List<TramoDTO>> verTramosAsignados(@PathVariable("transportistaId") String transportistaId) {
         return ResponseEntity.ok(tramoService.listarTramosPorTransportista(transportistaId));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Obtener tramo por ID")
-    public ResponseEntity<TramoDTO> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<TramoDTO> obtenerPorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(tramoService.obtenerPorId(id));
     }
 
@@ -55,9 +55,9 @@ public class TramoController {
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Asignar camión a tramo (valida capacidad)")
     public ResponseEntity<TramoDTO> asignarCamion(
-            @PathVariable Long id,
-            @RequestParam Long camionId,
-            @RequestParam String transportistaId) {
+            @PathVariable("id") Long id,
+            @RequestParam("camionId") Long camionId,
+            @RequestParam("transportistaId") String transportistaId) {
         TramoDTO updated = tramoService.asignarCamion(id, camionId, transportistaId);
         return ResponseEntity.ok(updated);
     }
@@ -65,7 +65,7 @@ public class TramoController {
     @PutMapping("/{id}/iniciar")
     @PreAuthorize("hasAnyRole('OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Iniciar tramo (registra fecha/hora de inicio)")
-    public ResponseEntity<TramoDTO> iniciarTramo(@PathVariable Long id) {
+    public ResponseEntity<TramoDTO> iniciarTramo(@PathVariable("id") Long id) {
         TramoDTO updated = tramoService.iniciarTramo(id);
         return ResponseEntity.ok(updated);
     }
@@ -73,7 +73,7 @@ public class TramoController {
     @PutMapping("/{id}/finalizar")
     @PreAuthorize("hasAnyRole('OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Finalizar tramo (registra fecha/hora de fin)")
-    public ResponseEntity<TramoDTO> finalizarTramo(@PathVariable Long id) {
+    public ResponseEntity<TramoDTO> finalizarTramo(@PathVariable("id") Long id) {
         TramoDTO updated = tramoService.finalizarTramo(id);
         return ResponseEntity.ok(updated);
     }

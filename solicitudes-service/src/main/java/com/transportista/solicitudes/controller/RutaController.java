@@ -22,7 +22,7 @@ public class RutaController {
     @GetMapping("/tentativas/{solicitudId}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Consultar rutas tentativas con múltiples opciones")
-    public ResponseEntity<List<RutaDTO>> consultarRutasTentativas(@PathVariable Long solicitudId) {
+    public ResponseEntity<List<RutaDTO>> consultarRutasTentativas(@PathVariable("solicitudId") Long solicitudId) {
         List<RutaDTO> rutas = rutaService.consultarRutasTentativas(solicitudId);
         return ResponseEntity.ok(rutas);
     }
@@ -31,7 +31,7 @@ public class RutaController {
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Asignar ruta definitiva a solicitud")
     public ResponseEntity<RutaDTO> asignarRuta(
-            @PathVariable Long solicitudId,
+            @PathVariable("solicitudId") Long solicitudId,
             @RequestBody RutaDTO rutaDTO) {
         RutaDTO ruta = rutaService.asignarRuta(solicitudId, rutaDTO);
         return ResponseEntity.ok(ruta);
@@ -40,7 +40,7 @@ public class RutaController {
     @GetMapping("/solicitud/{solicitudId}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
     @Operation(summary = "Obtener ruta asignada de una solicitud")
-    public ResponseEntity<RutaDTO> obtenerRutaDeSolicitud(@PathVariable Long solicitudId) {
+    public ResponseEntity<RutaDTO> obtenerRutaDeSolicitud(@PathVariable("solicitudId") Long solicitudId) {
         RutaDTO ruta = rutaService.obtenerRutaPorSolicitud(solicitudId);
         return ResponseEntity.ok(ruta);
     }

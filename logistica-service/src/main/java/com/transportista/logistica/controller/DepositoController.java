@@ -32,7 +32,7 @@ public class DepositoController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
     @Operation(summary = "Obtener depósito", description = "Obtiene un depósito por su ID")
-    public ResponseEntity<DepositoDTO> obtenerDeposito(@PathVariable Long id) {
+    public ResponseEntity<DepositoDTO> obtenerDeposito(@PathVariable("id") Long id) {
         DepositoDTO deposito = depositoService.obtenerDeposito(id);
         return ResponseEntity.ok(deposito);
     }
@@ -56,7 +56,7 @@ public class DepositoController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Actualizar depósito", description = "Actualiza los datos de un depósito")
-    public ResponseEntity<DepositoDTO> actualizarDeposito(@PathVariable Long id, @Valid @RequestBody DepositoDTO depositoDTO) {
+    public ResponseEntity<DepositoDTO> actualizarDeposito(@PathVariable("id") Long id, @Valid @RequestBody DepositoDTO depositoDTO) {
         DepositoDTO updated = depositoService.actualizarDeposito(id, depositoDTO);
         return ResponseEntity.ok(updated);
     }
@@ -64,7 +64,7 @@ public class DepositoController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Eliminar depósito", description = "Desactiva un depósito")
-    public ResponseEntity<Void> eliminarDeposito(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarDeposito(@PathVariable("id") Long id) {
         depositoService.eliminarDeposito(id);
         return ResponseEntity.noContent().build();
     }

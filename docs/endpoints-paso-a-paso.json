@@ -1,0 +1,1288 @@
+{
+  "info": {
+    "name": "Sistema Transporte - Endpoints Verificados",
+    "description": "Colección completa de endpoints funcionales probados paso a paso para CLIENTE y OPERADOR",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "paso-a-paso-2025"
+  },
+  "item": [
+    {
+      "name": "🔐 AUTENTICACIÓN",
+      "item": [
+        {
+          "name": "Login Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token_cliente', jsonData.access_token);",
+                  "    console.log('✓ Token de cliente guardado');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "backend-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "backend-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "cliente1",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "cliente123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+            },
+            "description": "Autenticación de usuario con rol CLIENTE. El token se guarda automáticamente."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Operador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token_operador', jsonData.access_token);",
+                  "    console.log('✓ Token de operador guardado');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "backend-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "backend-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "operador1",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "operador123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+            },
+            "description": "Autenticación de usuario con rol OPERADOR. El token se guarda automáticamente."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Transportista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token_transportista', jsonData.access_token);",
+                  "    console.log('✓ Token de transportista guardado');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "backend-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "backend-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "transportista1",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "transportista123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/transportista-realm/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "transportista-realm", "protocol", "openid-connect", "token"]
+            },
+            "description": "Autenticación de usuario con rol TRANSPORTISTA. El token se guarda automáticamente."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints de autenticación para los tres roles del sistema"
+    },
+    {
+      "name": "👤 CLIENTE - Funcionalidades Completas",
+      "item": [
+        {
+          "name": "1. Registrar Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('cliente_id', jsonData.id);",
+                  "    console.log('✓ Cliente creado con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"dni\": \"12345678\",\n  \"domicilio\": \"Av. Corrientes 1234, CABA\",\n  \"telefono\": \"11-5555-1234\",\n  \"email\": \"juan.perez@email.com\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/clientes",
+              "host": ["{{gateway_url}}"],
+              "path": ["clientes"]
+            },
+            "description": "✅ VERIFICADO\nRegistra un nuevo cliente. Guarda automáticamente el cliente_id."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Crear Solicitud de Transporte",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('solicitud_id', jsonData.id);",
+                  "    pm.collectionVariables.set('contenedor_id', jsonData.contenedorId);",
+                  "    pm.collectionVariables.set('numero_solicitud', jsonData.numeroSolicitud);",
+                  "    console.log('✓ Solicitud: ' + jsonData.numeroSolicitud);",
+                  "    console.log('✓ Contenedor ID: ' + jsonData.contenedorId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{cliente_id}},\n  \"pesoContenedor\": 18500.75,\n  \"volumenContenedor\": 45.5,\n  \"descripcionContenedor\": \"Equipos electronicos sensibles - Refrigerado\",\n  \"direccionOrigen\": \"Av. Corrientes 1000, Buenos Aires\",\n  \"latitudOrigen\": -34.6037,\n  \"longitudOrigen\": -58.3816,\n  \"direccionDestino\": \"Av. Libertador 5000, Buenos Aires\",\n  \"latitudDestino\": -34.5601,\n  \"longitudDestino\": -58.4558\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/solicitudes",
+              "host": ["{{gateway_url}}"],
+              "path": ["solicitudes"]
+            },
+            "description": "✅ VERIFICADO\nCrea solicitud con contenedor. Estado inicial: PENDIENTE"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Consultar Costo y Tiempo Estimado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Costo: $' + jsonData.costoTotal + ' ' + jsonData.moneda);",
+                  "    console.log('✓ Tiempo: ' + jsonData.tiempoEstimadoHoras + ' horas');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/solicitudes/{{solicitud_id}}/costo",
+              "host": ["{{gateway_url}}"],
+              "path": ["solicitudes", "{{solicitud_id}}", "costo"]
+            },
+            "description": "✅ VERIFICADO\nCalcula costo total considerando: distancia, combustible, peso, volumen y estadías"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Consultar Tracking del Contenedor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tracking/contenedor/{{contenedor_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["tracking", "contenedor", "{{contenedor_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene historial de eventos del contenedor"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Consultar Solicitudes del Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/solicitudes/cliente/{{cliente_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["solicitudes", "cliente", "{{cliente_id}}"]
+            },
+            "description": "✅ VERIFICADO\nLista todas las solicitudes de un cliente"
+          },
+          "response": []
+        }
+      ],
+      "description": "Funcionalidades completas del rol CLIENTE - Todas verificadas ✅"
+    },
+    {
+      "name": "⚙️ OPERADOR - Gestión de Rutas y Tramos",
+      "item": [
+        {
+          "name": "1. Consultar Rutas Tentativas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Opciones de rutas: ' + jsonData.length);",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.collectionVariables.set('ruta_tentativa', JSON.stringify(jsonData[0]));",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/rutas/tentativas/{{solicitud_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["rutas", "tentativas", "{{solicitud_id}}"]
+            },
+            "description": "✅ VERIFICADO\nGenera múltiples opciones de rutas con estimaciones:\n- Ruta directa (origen → destino)\n- Ruta con depósito intermedio\n\nCalcula para cada opción:\n✓ Distancia total (km)\n✓ Costo estimado (ARS)\n✓ Tiempo estimado (horas)\n✓ Todos los tramos con coordenadas"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Asignar Ruta a Solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('ruta_id', jsonData.id);",
+                  "    console.log('✓ Ruta asignada con ID: ' + jsonData.id);",
+                  "    console.log('✓ Tramos creados: ' + jsonData.cantidadTramos);",
+                  "    if (jsonData.tramos && jsonData.tramos.length > 0) {",
+                  "        pm.collectionVariables.set('tramo_id', jsonData.tramos[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{ruta_tentativa}}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/rutas/asignar/{{solicitud_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["rutas", "asignar", "{{solicitud_id}}"]
+            },
+            "description": "✅ VERIFICADO\nAsigna una ruta definitiva con todos sus tramos.\n\nEfectos:\n✓ Guarda la ruta en la BD\n✓ Crea todos los tramos asociados\n✓ Cambia estado de solicitud a: RUTA_ASIGNADA\n✓ Guarda automáticamente el tramo_id del primer tramo"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Consultar Ruta Asignada",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/rutas/solicitud/{{solicitud_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["rutas", "solicitud", "{{solicitud_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene la ruta asignada a una solicitud con todos sus tramos"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Asignar Camión a Tramo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Camión asignado al tramo');",
+                  "    console.log('✓ Estado: ' + jsonData.estado);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/{{tramo_id}}/asignar-camion?camionId=1&transportistaId=transportista1",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "{{tramo_id}}", "asignar-camion"],
+              "query": [
+                {
+                  "key": "camionId",
+                  "value": "1"
+                },
+                {
+                  "key": "transportistaId",
+                  "value": "transportista1"
+                }
+              ]
+            },
+            "description": "✅ NUEVO ENDPOINT\nAsigna un camión a un tramo de transporte.\n\nValidaciones automáticas:\n✓ Verifica que el tramo esté en estado PENDIENTE\n✓ Valida capacidad de peso del camión vs contenedor\n✓ Valida capacidad de volumen del camión vs contenedor\n✓ Consulta automáticamente al servicio de logística\n\nEfectos:\n✓ Asigna camionId y transportistaId al tramo\n✓ Cambia estado del tramo a: ASIGNADO"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Listar Todos los Tramos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos"]
+            },
+            "description": "Lista todos los tramos del sistema (solo OPERADOR)"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Obtener Tramo por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/{{tramo_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "{{tramo_id}}"]
+            },
+            "description": "Obtiene detalles de un tramo específico"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Listar Solicitudes (todas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/solicitudes",
+              "host": ["{{gateway_url}}"],
+              "path": ["solicitudes"]
+            },
+            "description": "Lista todas las solicitudes del sistema (solo OPERADOR)"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Filtrar Solicitudes por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/solicitudes/estado/PENDIENTE",
+              "host": ["{{gateway_url}}"],
+              "path": ["solicitudes", "estado", "PENDIENTE"]
+            },
+            "description": "Filtra solicitudes por estado.\n\nEstados válidos:\n- PENDIENTE\n- RUTA_ASIGNADA\n- EN_PROCESO\n- COMPLETADA\n- CANCELADA"
+          },
+          "response": []
+        }
+      ],
+      "description": "Funcionalidades completas del rol OPERADOR - Gestión de rutas y asignación de recursos"
+    },
+    {
+      "name": "🏢 OPERADOR - Gestión de Depósitos",
+      "item": [
+        {
+          "name": "1. Crear Depósito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('deposito_id', jsonData.id);",
+                  "    console.log('✓ Depósito creado con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Depósito Central CABA\",\n  \"direccion\": \"Av. del Libertador 1000, CABA\",\n  \"latitud\": -34.5875,\n  \"longitud\": -58.4189,\n  \"capacidadMaxima\": 50000.0,\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/depositos",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos"]
+            },
+            "description": "✅ VERIFICADO\nCrea un nuevo depósito en el sistema.\n\nCampos requeridos:\n✓ nombre: Nombre del depósito\n✓ direccion: Dirección completa\n✓ latitud y longitud: Coordenadas GPS\n✓ capacidadMaxima: Capacidad en kg\n✓ activo: true/false"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Listar Todos los Depósitos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/depositos",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos"]
+            },
+            "description": "✅ VERIFICADO\nObtiene lista completa de depósitos del sistema"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Listar Depósitos Activos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/depositos/activos",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos", "activos"]
+            },
+            "description": "✅ VERIFICADO\nObtiene solo los depósitos activos (disponibles para asignar rutas)"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Obtener Depósito por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/depositos/{{deposito_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos", "{{deposito_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene detalles de un depósito específico"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Actualizar Depósito",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Depósito Central CABA - Actualizado\",\n  \"direccion\": \"Av. del Libertador 1000, CABA\",\n  \"latitud\": -34.5875,\n  \"longitud\": -58.4189,\n  \"capacidadMaxima\": 60000.0,\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/depositos/{{deposito_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos", "{{deposito_id}}"]
+            },
+            "description": "✅ VERIFICADO\nActualiza los datos de un depósito existente"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Eliminar Depósito",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/depositos/{{deposito_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["depositos", "{{deposito_id}}"]
+            },
+            "description": "✅ VERIFICADO\nElimina un depósito del sistema (solo si no está en uso)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Gestión completa de depósitos - Solo OPERADOR"
+    },
+    {
+      "name": "🚛 OPERADOR - Gestión de Camiones",
+      "item": [
+        {
+          "name": "1. Crear Camión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('camion_id', jsonData.id);",
+                  "    console.log('✓ Camión creado con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"AB123CD\",\n  \"modelo\": \"Mercedes-Benz Actros 2651\",\n  \"capacidadPeso\": 25000.0,\n  \"capacidadVolumen\": 80.0,\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/camiones",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones"]
+            },
+            "description": "✅ VERIFICADO\nCrea un nuevo camión en el sistema.\n\nCampos requeridos:\n✓ patente: Patente única del vehículo\n✓ modelo: Modelo del camión\n✓ capacidadPeso: Capacidad en kg\n✓ capacidadVolumen: Capacidad en m³\n✓ disponible: true/false"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Listar Todos los Camiones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/camiones",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones"]
+            },
+            "description": "✅ VERIFICADO\nObtiene lista completa de camiones del sistema"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Listar Camiones Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/camiones/disponibles",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones", "disponibles"]
+            },
+            "description": "✅ VERIFICADO\nObtiene solo los camiones disponibles para asignar"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Obtener Camión por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/camiones/{{camion_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones", "{{camion_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene detalles de un camión específico"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Actualizar Camión",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"AB123CD\",\n  \"modelo\": \"Mercedes-Benz Actros 2651 - Actualizado\",\n  \"capacidadPeso\": 26000.0,\n  \"capacidadVolumen\": 85.0,\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/camiones/{{camion_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones", "{{camion_id}}"]
+            },
+            "description": "✅ VERIFICADO\nActualiza los datos de un camión existente"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Eliminar Camión",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/camiones/{{camion_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["camiones", "{{camion_id}}"]
+            },
+            "description": "✅ VERIFICADO\nElimina un camión del sistema (solo si no está en uso)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Gestión completa de camiones - Solo OPERADOR"
+    },
+    {
+      "name": "💰 OPERADOR - Gestión de Tarifas",
+      "item": [
+        {
+          "name": "1. Crear Tarifa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('tarifa_id', jsonData.id);",
+                  "    console.log('✓ Tarifa creada con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Tarifa Estándar 2025\",\n  \"descripcion\": \"Tarifa base para transporte nacional\",\n  \"costoPorKm\": 150.0,\n  \"costoBaseCombustible\": 500.0,\n  \"costoEstadia\": 1000.0,\n  \"factorPeso\": 0.05,\n  \"factorVolumen\": 0.03,\n  \"activa\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/tarifas",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas"]
+            },
+            "description": "✅ VERIFICADO\nCrea una nueva tarifa en el sistema.\n\nCampos requeridos:\n✓ nombre: Nombre descriptivo\n✓ descripcion: Descripción de la tarifa\n✓ costoPorKm: Costo por kilómetro (ARS)\n✓ costoBaseCombustible: Costo base de combustible (ARS)\n✓ costoEstadia: Costo por estadía en depósito (ARS)\n✓ factorPeso: Factor multiplicador por peso\n✓ factorVolumen: Factor multiplicador por volumen\n✓ activa: true/false"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Listar Todas las Tarifas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tarifas",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas"]
+            },
+            "description": "✅ VERIFICADO\nObtiene lista completa de tarifas del sistema"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Listar Tarifas Activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tarifas/activas",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas", "activas"]
+            },
+            "description": "✅ VERIFICADO\nObtiene solo las tarifas activas (aplicables a cálculos)"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Obtener Tarifa por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tarifas/{{tarifa_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas", "{{tarifa_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene detalles de una tarifa específica"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Actualizar Tarifa",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Tarifa Estándar 2025 - Actualizada\",\n  \"descripcion\": \"Tarifa base para transporte nacional con ajuste\",\n  \"costoPorKm\": 165.0,\n  \"costoBaseCombustible\": 550.0,\n  \"costoEstadia\": 1200.0,\n  \"factorPeso\": 0.06,\n  \"factorVolumen\": 0.035,\n  \"activa\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/tarifas/{{tarifa_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas", "{{tarifa_id}}"]
+            },
+            "description": "✅ VERIFICADO\nActualiza los parámetros de una tarifa existente.\n\nPermite modificar todos los parámetros de tarifación:\n✓ Costos por kilómetro\n✓ Costo de combustible\n✓ Costo de estadía\n✓ Factores de peso y volumen"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Desactivar Tarifa",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tarifas/{{tarifa_id}}/desactivar",
+              "host": ["{{gateway_url}}"],
+              "path": ["tarifas", "{{tarifa_id}}", "desactivar"]
+            },
+            "description": "✅ VERIFICADO\nDesactiva una tarifa (la marca como inactiva pero no la elimina).\n\nÚtil para:\n✓ Mantener historial de tarifas\n✓ Evitar usar tarifas obsoletas\n✓ Auditoría de cambios"
+          },
+          "response": []
+        }
+      ],
+      "description": "Gestión completa de tarifas y parámetros de tarifación - Solo OPERADOR"
+    },
+    {
+      "name": "🚚 TRANSPORTISTA - Gestión de Tramos",
+      "item": [
+        {
+          "name": "1. Ver Mis Tramos Asignados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Tramos asignados: ' + jsonData.length);",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.collectionVariables.set('mi_tramo_id', jsonData[0].id);",
+                  "        console.log('✓ Primer tramo ID: ' + jsonData[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_transportista}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/transportista/transportista1",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "transportista", "transportista1"]
+            },
+            "description": "✅ FUNCIONALIDAD TRANSPORTISTA\nObtiene todos los tramos asignados al transportista autenticado.\n\nMuestra para cada tramo:\n✓ ID del tramo\n✓ Ubicación origen y destino\n✓ Coordenadas GPS\n✓ Distancia en km\n✓ Estado actual (PENDIENTE, ASIGNADO, EN_CURSO, COMPLETADO)\n✓ Camión asignado\n✓ Información del contenedor\n✓ Fechas de inicio y fin (si aplica)\n\nNOTA: Reemplazar 'transportista1' con el username del transportista autenticado"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Registrar Inicio de Tramo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Tramo iniciado');",
+                  "    console.log('✓ Estado: ' + jsonData.estado);",
+                  "    console.log('✓ Fecha inicio: ' + jsonData.fechaInicio);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_transportista}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/{{tramo_id}}/iniciar",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "{{tramo_id}}", "iniciar"]
+            },
+            "description": "✅ FUNCIONALIDAD TRANSPORTISTA\nRegistra el inicio de un tramo de transporte.\n\nValidaciones automáticas:\n✓ Verifica que el tramo esté en estado ASIGNADO\n✓ Verifica que el transportista autenticado sea el asignado al tramo\n\nEfectos:\n✓ Cambia el estado del tramo a: EN_CURSO\n✓ Registra la fecha y hora de inicio\n✓ Crea evento de tracking: RECOGIDO\n✓ Actualiza el estado del contenedor\n\nSolo el transportista asignado puede iniciar el tramo."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Registrar Fin de Tramo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✓ Tramo completado');",
+                  "    console.log('✓ Estado: ' + jsonData.estado);",
+                  "    console.log('✓ Fecha fin: ' + jsonData.fechaFin);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_transportista}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/{{tramo_id}}/finalizar",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "{{tramo_id}}", "finalizar"]
+            },
+            "description": "✅ FUNCIONALIDAD TRANSPORTISTA\nRegistra la finalización de un tramo de transporte.\n\nValidaciones automáticas:\n✓ Verifica que el tramo esté en estado EN_CURSO\n✓ Verifica que el transportista autenticado sea el asignado al tramo\n✓ Verifica que el tramo haya sido iniciado previamente\n\nEfectos:\n✓ Cambia el estado del tramo a: COMPLETADO\n✓ Registra la fecha y hora de finalización\n✓ Crea evento de tracking: ENTREGADO (si es el último tramo)\n✓ Crea evento de tracking: EN_TRANSITO (si hay más tramos)\n✓ Actualiza el estado del contenedor\n✓ Si es el último tramo, cambia estado de solicitud a: COMPLETADA\n\nSolo el transportista asignado puede finalizar el tramo."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Ver Detalle de Mi Tramo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_transportista}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/{{tramo_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "{{tramo_id}}"]
+            },
+            "description": "✅ FUNCIONALIDAD TRANSPORTISTA\nObtiene los detalles completos de un tramo específico.\n\nInformación incluida:\n✓ Datos del tramo (origen, destino, distancia)\n✓ Estado actual\n✓ Camión asignado\n✓ Información del contenedor\n✓ Fechas de inicio y fin\n✓ Coordenadas GPS de origen y destino\n\nEl transportista puede ver detalles de cualquier tramo asignado a él."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Ver Tramos por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_transportista}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/tramos/transportista/transportista1?estado=ASIGNADO",
+              "host": ["{{gateway_url}}"],
+              "path": ["tramos", "transportista", "transportista1"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "ASIGNADO",
+                  "description": "Estados válidos: PENDIENTE, ASIGNADO, EN_CURSO, COMPLETADO"
+                }
+              ]
+            },
+            "description": "✅ FUNCIONALIDAD TRANSPORTISTA\nFiltra los tramos del transportista por estado específico.\n\nEstados disponibles:\n✓ PENDIENTE: Tramo creado pero sin camión asignado\n✓ ASIGNADO: Camión asignado, listo para iniciar\n✓ EN_CURSO: Tramo en ejecución\n✓ COMPLETADO: Tramo finalizado\n\nÚtil para:\n- Ver tramos pendientes de iniciar (ASIGNADO)\n- Ver tramos en progreso (EN_CURSO)\n- Ver historial de tramos completados (COMPLETADO)\n\nNOTA: Reemplazar 'transportista1' con el username del transportista autenticado"
+          },
+          "response": []
+        }
+      ],
+      "description": "Funcionalidades completas del rol TRANSPORTISTA - Gestión de tramos asignados"
+    }
+  ],
+  "variable": [
+    {
+      "key": "gateway_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token_cliente",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_operador",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_transportista",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cliente_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "solicitud_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contenedor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "numero_solicitud",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ruta_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ruta_tentativa",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tramo_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deposito_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "camion_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tarifa_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

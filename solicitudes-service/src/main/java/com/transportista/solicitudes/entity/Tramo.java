@@ -27,7 +27,7 @@ public class Tramo {
     @Column(name = "tipo_tramo", nullable = false, length = 50)
     private String tipoTramo; // ORIGEN_DEPOSITO, DEPOSITO_DEPOSITO, DEPOSITO_DESTINO, ORIGEN_DESTINO
 
-    @Column(name = "orden_tramo", nullable = false)
+    @Column(name = "numero_orden", nullable = false)
     private Integer ordenTramo; // Para mantener el orden de los tramos
 
     @Column(name = "estado", nullable = false, length = 30)

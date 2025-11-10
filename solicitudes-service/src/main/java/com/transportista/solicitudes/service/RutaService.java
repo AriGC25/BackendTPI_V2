@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class RutaService {
 
     private final RutaRepository rutaRepository;
     private final SolicitudRepository solicitudRepository;
+    private final GoogleMapsService googleMapsService;
 
     public List<RutaDTO> consultarRutasTentativas(Long solicitudId) {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
@@ -34,11 +36,13 @@ public class RutaService {
 
         // Ruta directa (origen -> destino)
         RutaDTO rutaDirecta = generarRutaDirecta(solicitud);
+        calcularEstimacionesRuta(rutaDirecta, solicitud);
         rutasTentativas.add(rutaDirecta);
 
         // Ruta con un depósito intermedio
         RutaDTO rutaConDeposito = generarRutaConDeposito(solicitud);
         if (rutaConDeposito != null) {
+            calcularEstimacionesRuta(rutaConDeposito, solicitud);
             rutasTentativas.add(rutaConDeposito);
         }
 
@@ -61,6 +65,29 @@ public class RutaService {
 
         Ruta rutaGuardada = rutaRepository.save(ruta);
 
+        // Crear y guardar los tramos
+        if (rutaDTO.getTramos() != null && !rutaDTO.getTramos().isEmpty()) {
+            List<Tramo> tramos = new ArrayList<>();
+            int orden = 1;
+            for (TramoDTO tramoDTO : rutaDTO.getTramos()) {
+                Tramo tramo = new Tramo();
+                tramo.setRuta(rutaGuardada);
+                tramo.setTipoTramo(tramoDTO.getTipoTramo());
+                tramo.setOrdenTramo(tramoDTO.getOrdenTramo() != null ? tramoDTO.getOrdenTramo() : orden);
+                tramo.setEstado("PENDIENTE");
+                tramo.setDireccionOrigen(tramoDTO.getDireccionOrigen());
+                tramo.setLatitudOrigen(tramoDTO.getLatitudOrigen());
+                tramo.setLongitudOrigen(tramoDTO.getLongitudOrigen());
+                tramo.setDireccionDestino(tramoDTO.getDireccionDestino());
+                tramo.setLatitudDestino(tramoDTO.getLatitudDestino());
+                tramo.setLongitudDestino(tramoDTO.getLongitudDestino());
+                tramos.add(tramo);
+                orden++;
+            }
+            rutaGuardada.setTramos(tramos);
+            rutaGuardada = rutaRepository.save(rutaGuardada);
+        }
+
         // Actualizar estado de la solicitud
         solicitud.setEstado("RUTA_ASIGNADA");
         solicitud.setFechaActualizacion(LocalDateTime.now());
@@ -75,11 +102,78 @@ public class RutaService {
         return convertToDTO(ruta);
     }
 
+    /**
+     * Calcula el costo, tiempo y distancia estimados de una ruta
+     */
+    private void calcularEstimacionesRuta(RutaDTO ruta, Solicitud solicitud) {
+        BigDecimal distanciaTotal = BigDecimal.ZERO;
+        BigDecimal costoTotal = BigDecimal.ZERO;
+        BigDecimal tiempoTotal = BigDecimal.ZERO;
+
+        final BigDecimal COSTO_POR_KM = BigDecimal.valueOf(120); // ARS por km
+        final BigDecimal COSTO_COMBUSTIBLE_POR_KM = BigDecimal.valueOf(52.5); // 0.35 L/km * 150 ARS/L
+        final BigDecimal VELOCIDAD_PROMEDIO = BigDecimal.valueOf(60); // km/h
+        final BigDecimal TIEMPO_CARGA_DESCARGA = BigDecimal.valueOf(2); // horas por tramo
+        final BigDecimal COSTO_ESTADIA_DEPOSITO = BigDecimal.valueOf(500); // ARS por depósito
+
+        // Calcular distancia y tiempo por cada tramo
+        for (TramoDTO tramo : ruta.getTramos()) {
+            BigDecimal distanciaTramo = googleMapsService.calcularDistanciaReal(
+                tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
+                tramo.getLatitudDestino(), tramo.getLongitudDestino()
+            );
+
+            distanciaTotal = distanciaTotal.add(distanciaTramo);
+
+            // Costo del tramo = (distancia × costo_por_km) + (distancia × costo_combustible_por_km)
+            BigDecimal costoTramo = distanciaTramo.multiply(COSTO_POR_KM.add(COSTO_COMBUSTIBLE_POR_KM));
+            costoTotal = costoTotal.add(costoTramo);
+
+            // Tiempo del tramo = (distancia / velocidad) + tiempo de carga/descarga
+            BigDecimal tiempoTramo = distanciaTramo.divide(VELOCIDAD_PROMEDIO, 2, RoundingMode.HALF_UP)
+                                                   .add(TIEMPO_CARGA_DESCARGA);
+            tiempoTotal = tiempoTotal.add(tiempoTramo);
+        }
+
+        // Agregar costo de estadías en depósitos
+        if (ruta.getCantidadDepositos() != null && ruta.getCantidadDepositos() > 0) {
+            BigDecimal costoEstadias = COSTO_ESTADIA_DEPOSITO.multiply(
+                BigDecimal.valueOf(ruta.getCantidadDepositos())
+            );
+            costoTotal = costoTotal.add(costoEstadias);
+        }
+
+        // Aplicar factor por peso y volumen del contenedor
+        if (solicitud.getContenedor() != null) {
+            BigDecimal factor = calcularFactorContenedor(solicitud);
+            costoTotal = costoTotal.multiply(factor);
+        }
+
+        // Asignar valores calculados al DTO
+        ruta.setDistanciaTotal(distanciaTotal.setScale(2, RoundingMode.HALF_UP));
+        ruta.setCostoEstimado(costoTotal.setScale(2, RoundingMode.HALF_UP));
+        ruta.setTiempoEstimadoHoras(tiempoTotal.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    /**
+     * Calcula el factor multiplicador basado en peso y volumen del contenedor
+     */
+    private BigDecimal calcularFactorContenedor(Solicitud solicitud) {
+        BigDecimal pesoFactor = solicitud.getContenedor().getPeso()
+            .divide(BigDecimal.valueOf(20000), 4, RoundingMode.HALF_UP);
+        BigDecimal volumenFactor = solicitud.getContenedor().getVolumen()
+            .divide(BigDecimal.valueOf(50), 4, RoundingMode.HALF_UP);
+
+        BigDecimal factor = BigDecimal.ONE.add(pesoFactor).add(volumenFactor);
+        return factor.min(BigDecimal.valueOf(2.0)); // Máximo 2x el costo base
+    }
+
     private RutaDTO generarRutaDirecta(Solicitud solicitud) {
         RutaDTO ruta = new RutaDTO();
         ruta.setSolicitudId(solicitud.getId());
         ruta.setCantidadTramos(1);
         ruta.setCantidadDepositos(0);
+        ruta.setDescripcion("Ruta directa sin depósitos intermedios");
 
         List<TramoDTO> tramos = new ArrayList<>();
         TramoDTO tramo = new TramoDTO();
@@ -100,12 +194,11 @@ public class RutaService {
     }
 
     private RutaDTO generarRutaConDeposito(Solicitud solicitud) {
-        // Aquí podrías implementar lógica para encontrar depósitos intermedios
-        // Por simplicidad, generamos una ruta ejemplo con un depósito ficticio
         RutaDTO ruta = new RutaDTO();
         ruta.setSolicitudId(solicitud.getId());
         ruta.setCantidadTramos(2);
         ruta.setCantidadDepositos(1);
+        ruta.setDescripcion("Ruta con 1 depósito intermedio (Depósito Central)");
 
         List<TramoDTO> tramos = new ArrayList<>();
 

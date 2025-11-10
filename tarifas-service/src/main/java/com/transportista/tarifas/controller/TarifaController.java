@@ -42,7 +42,7 @@ public class TarifaController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Obtener tarifa por ID")
-    public ResponseEntity<TarifaDTO> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<TarifaDTO> obtenerPorId(@PathVariable("id") Long id) {
         Tarifa tarifa = tarifaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada"));
         return ResponseEntity.ok(convertirADTO(tarifa));
@@ -51,7 +51,7 @@ public class TarifaController {
     @GetMapping("/tipo/{tipoTramo}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
     @Operation(summary = "Obtener tarifa por tipo de tramo")
-    public ResponseEntity<TarifaDTO> obtenerPorTipoTramo(@PathVariable String tipoTramo) {
+    public ResponseEntity<TarifaDTO> obtenerPorTipoTramo(@PathVariable("tipoTramo") String tipoTramo) {
         Tarifa tarifa = tarifaRepository.findByTipoTramoAndActivoTrue(tipoTramo)
                 .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada para el tipo: " + tipoTramo));
         return ResponseEntity.ok(convertirADTO(tarifa));
@@ -77,7 +77,7 @@ public class TarifaController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Actualizar tarifa existente")
-    public ResponseEntity<TarifaDTO> actualizarTarifa(@PathVariable Long id, @Valid @RequestBody TarifaDTO dto) {
+    public ResponseEntity<TarifaDTO> actualizarTarifa(@PathVariable("id") Long id, @Valid @RequestBody TarifaDTO dto) {
         Tarifa tarifa = tarifaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada"));
 
@@ -94,7 +94,7 @@ public class TarifaController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
     @Operation(summary = "Desactivar tarifa")
-    public ResponseEntity<Void> eliminarTarifa(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarTarifa(@PathVariable("id") Long id) {
         Tarifa tarifa = tarifaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada"));
 

@@ -24,11 +24,10 @@ public class CamionService {
 
         Camion camion = new Camion();
         camion.setPatente(dto.getPatente());
-        camion.setTransportista(dto.getTransportista());
+        camion.setModelo(dto.getModelo());
         camion.setCapacidadPeso(dto.getCapacidadPeso());
         camion.setCapacidadVolumen(dto.getCapacidadVolumen());
-        camion.setCostoPorKm(dto.getCostoPorKm());
-        camion.setDisponible(true);
+        camion.setDisponible(dto.getDisponible() != null ? dto.getDisponible() : true);
         camion.setActivo(true);
 
         Camion saved = camionRepository.save(camion);
@@ -57,10 +56,9 @@ public class CamionService {
         Camion camion = camionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Camión no encontrado"));
 
-        camion.setTransportista(dto.getTransportista());
+        camion.setModelo(dto.getModelo());
         camion.setCapacidadPeso(dto.getCapacidadPeso());
         camion.setCapacidadVolumen(dto.getCapacidadVolumen());
-        camion.setCostoPorKm(dto.getCostoPorKm());
         if (dto.getDisponible() != null) {
             camion.setDisponible(dto.getDisponible());
         }
@@ -83,10 +81,9 @@ public class CamionService {
         CamionDTO dto = new CamionDTO();
         dto.setId(camion.getId());
         dto.setPatente(camion.getPatente());
-        dto.setTransportista(camion.getTransportista());
+        dto.setModelo(camion.getModelo());
         dto.setCapacidadPeso(camion.getCapacidadPeso());
         dto.setCapacidadVolumen(camion.getCapacidadVolumen());
-        dto.setCostoPorKm(camion.getCostoPorKm());
         dto.setDisponible(camion.getDisponible());
         dto.setActivo(camion.getActivo());
         return dto;

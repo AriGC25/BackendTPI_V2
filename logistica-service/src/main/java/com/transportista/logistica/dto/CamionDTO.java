@@ -19,9 +19,9 @@ public class CamionDTO {
     @NotBlank(message = "La patente es requerida")
     private String patente;
     
-    @NotBlank(message = "El nombre del transportista es requerido")
-    private String transportista;
-    
+    @NotBlank(message = "El modelo es requerido")
+    private String modelo;
+
     @NotNull(message = "La capacidad de peso es requerida")
     @Positive(message = "La capacidad de peso debe ser positiva")
     private BigDecimal capacidadPeso;
@@ -29,10 +29,6 @@ public class CamionDTO {
     @NotNull(message = "La capacidad de volumen es requerida")
     @Positive(message = "La capacidad de volumen debe ser positiva")
     private BigDecimal capacidadVolumen;
-    
-    @NotNull(message = "El costo por km es requerido")
-    @Positive(message = "El costo por km debe ser positivo")
-    private BigDecimal costoPorKm;
     
     private Boolean disponible;
     private Boolean activo;

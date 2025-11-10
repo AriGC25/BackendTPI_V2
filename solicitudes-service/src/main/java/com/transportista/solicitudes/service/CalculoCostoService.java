@@ -36,9 +36,13 @@ public class CalculoCostoService {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
                 .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
 
-        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
-                .orElseThrow(() -> new IllegalArgumentException("No hay ruta asignada"));
+        // Si no tiene ruta asignada, calcular estimación preliminar
+        var rutaOpt = rutaRepository.findBySolicitudId(solicitudId);
+        if (rutaOpt.isEmpty()) {
+            return calcularCostoEstimadoPreliminar(solicitud);
+        }
 
+        Ruta ruta = rutaOpt.get();
         List<Tramo> tramos = tramoRepository.findByRutaIdOrderByOrdenTramo(ruta.getId());
 
         BigDecimal costoTotal = BigDecimal.ZERO;
@@ -79,9 +83,16 @@ public class CalculoCostoService {
      * Calcula el tiempo estimado de entrega en horas
      */
     public BigDecimal calcularTiempoEstimado(Long solicitudId) {
-        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
-                .orElseThrow(() -> new IllegalArgumentException("No hay ruta asignada"));
+        Solicitud solicitud = solicitudRepository.findById(solicitudId)
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
 
+        // Si no tiene ruta asignada, calcular estimación preliminar
+        var rutaOpt = rutaRepository.findBySolicitudId(solicitudId);
+        if (rutaOpt.isEmpty()) {
+            return calcularTiempoEstimadoPreliminar(solicitud);
+        }
+
+        Ruta ruta = rutaOpt.get();
         List<Tramo> tramos = tramoRepository.findByRutaIdOrderByOrdenTramo(ruta.getId());
 
         BigDecimal tiempoTotal = BigDecimal.ZERO;
@@ -97,6 +108,55 @@ public class CalculoCostoService {
             BigDecimal tiempoViaje = distancia.divide(VELOCIDAD_PROMEDIO_KMH, 2, RoundingMode.HALF_UP);
             tiempoTotal = tiempoTotal.add(tiempoViaje).add(TIEMPO_CARGA_DESCARGA_HORAS);
         }
+
+        return tiempoTotal.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Calcula estimación preliminar de costo cuando no hay ruta asignada
+     */
+    private BigDecimal calcularCostoEstimadoPreliminar(Solicitud solicitud) {
+        // Calcular distancia directa entre origen y destino
+        BigDecimal distancia = googleMapsService.calcularDistanciaReal(
+                solicitud.getLatitudOrigen(), solicitud.getLongitudOrigen(),
+                solicitud.getLatitudDestino(), solicitud.getLongitudDestino()
+        );
+
+        // Costo base por km (aproximado)
+        BigDecimal costoPorKm = BigDecimal.valueOf(120); // Tarifa base estimada
+        BigDecimal costoDistancia = distancia.multiply(costoPorKm);
+
+        // Costo de combustible estimado
+        BigDecimal consumoPromedio = BigDecimal.valueOf(0.35); // Litros por km
+        BigDecimal precioCombustible = BigDecimal.valueOf(150); // ARS por litro
+        BigDecimal costoCombustible = distancia.multiply(consumoPromedio).multiply(precioCombustible);
+
+        // Sumar costos base
+        BigDecimal costoBase = costoDistancia.add(costoCombustible);
+
+        // Aplicar factor por peso y volumen del contenedor
+        BigDecimal factor = calcularFactorContenedor(solicitud.getContenedor());
+        BigDecimal costoTotal = costoBase.multiply(factor);
+
+        return costoTotal.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Calcula tiempo estimado preliminar cuando no hay ruta asignada
+     */
+    private BigDecimal calcularTiempoEstimadoPreliminar(Solicitud solicitud) {
+        // Calcular distancia directa entre origen y destino
+        BigDecimal distancia = googleMapsService.calcularDistanciaReal(
+                solicitud.getLatitudOrigen(), solicitud.getLongitudOrigen(),
+                solicitud.getLatitudDestino(), solicitud.getLongitudDestino()
+        );
+
+        // Velocidad promedio estimada
+        final BigDecimal VELOCIDAD_PROMEDIO_KMH = BigDecimal.valueOf(60);
+        final BigDecimal TIEMPO_CARGA_DESCARGA_HORAS = BigDecimal.valueOf(4); // 2h origen + 2h destino
+
+        BigDecimal tiempoViaje = distancia.divide(VELOCIDAD_PROMEDIO_KMH, 2, RoundingMode.HALF_UP);
+        BigDecimal tiempoTotal = tiempoViaje.add(TIEMPO_CARGA_DESCARGA_HORAS);
 
         return tiempoTotal.setScale(2, RoundingMode.HALF_UP);
     }

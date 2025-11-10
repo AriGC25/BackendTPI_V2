@@ -22,7 +22,7 @@ public class TrackingController {
     @GetMapping("/contenedor/{contenedorId}")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Seguimiento por contenedor", description = "Obtiene el historial de eventos de un contenedor")
-    public ResponseEntity<List<TrackingEventoDTO>> obtenerHistorialContenedor(@PathVariable Long contenedorId) {
+    public ResponseEntity<List<TrackingEventoDTO>> obtenerHistorialContenedor(@PathVariable("contenedorId") Long contenedorId) {
         List<TrackingEventoDTO> eventos = trackingService.obtenerHistorialContenedor(contenedorId);
         return ResponseEntity.ok(eventos);
     }
@@ -30,7 +30,7 @@ public class TrackingController {
     @GetMapping("/solicitud/{solicitudId}")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")
     @Operation(summary = "Seguimiento por solicitud", description = "Obtiene el historial de eventos de una solicitud")
-    public ResponseEntity<List<TrackingEventoDTO>> obtenerHistorialSolicitud(@PathVariable Long solicitudId) {
+    public ResponseEntity<List<TrackingEventoDTO>> obtenerHistorialSolicitud(@PathVariable("solicitudId") Long solicitudId) {
         List<TrackingEventoDTO> eventos = trackingService.obtenerHistorialSolicitud(solicitudId);
         return ResponseEntity.ok(eventos);
     }

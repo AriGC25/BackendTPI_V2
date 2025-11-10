@@ -94,11 +94,18 @@ public class TramoService {
                     .get()
                     .uri(url)
                     .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> {
+                                System.err.println("Error al consultar camión: " + response.statusCode());
+                                return response.bodyToMono(String.class).map(body ->
+                                    new IllegalArgumentException("Error al consultar camión ID " + camionId + ": " + response.statusCode())
+                                );
+                            })
                     .bodyToMono(CamionCapacidad.class)
                     .block();
 
             if (camion == null) {
-                throw new IllegalArgumentException("Camión no encontrado");
+                throw new IllegalArgumentException("Camión no encontrado con ID: " + camionId);
             }
 
             if (pesoContenedor.compareTo(camion.getCapacidadPeso()) > 0) {
@@ -115,8 +122,10 @@ public class TramoService {
                 );
             }
 
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IllegalStateException("Error al validar capacidad del camión: " + e.getMessage());
+            throw new IllegalStateException("Error al validar capacidad del camión: " + e.getMessage(), e);
         }
     }
 

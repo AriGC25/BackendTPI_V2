@@ -44,12 +44,12 @@ VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 -- Sample Camiones Data
-INSERT INTO camiones (patente, transportista, capacidad_peso, capacidad_volumen, costo_por_km, disponible, fecha_creacion, activo) 
+INSERT INTO camiones (patente, modelo, capacidad_peso, capacidad_volumen, disponible, fecha_creacion, activo)
 VALUES
-('AB123CD', 'Transporte López', 25.0, 60.0, 4.5, true, NOW(), true),
-('EF456GH', 'Transportes del Norte', 30.0, 80.0, 5.0, true, NOW(), true),
-('IJ789KL', 'Logística Sur', 20.0, 50.0, 4.0, true, NOW(), true),
-('MN012OP', 'Cargo Express', 28.0, 70.0, 4.8, true, NOW(), true),
-('QR345ST', 'Trans Continental', 32.0, 85.0, 5.5, true, NOW(), true)
+('AB123CD', 'Mercedes-Benz Actros 2651', 25000.0, 80.0, true, NOW(), true),
+('EF456GH', 'Scania R500', 30000.0, 85.0, true, NOW(), true),
+('IJ789KL', 'Volvo FH16', 28000.0, 75.0, true, NOW(), true),
+('MN012OP', 'Iveco Stralis', 26000.0, 70.0, true, NOW(), true),
+('QR345ST', 'DAF XF', 32000.0, 90.0, true, NOW(), true)
 ON CONFLICT (patente) DO NOTHING;
 */

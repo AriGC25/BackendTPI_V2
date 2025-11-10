@@ -26,24 +26,19 @@ public class Camion {
     @Column(unique = true, nullable = false, length = 20)
     private String patente;
 
-    @NotBlank(message = "El nombre del transportista es requerido")
-    @Column(name = "transportista", nullable = false)
-    private String transportista;
+    @NotBlank(message = "El modelo es requerido")
+    @Column(name = "modelo", nullable = false, length = 100)
+    private String modelo;
 
     @NotNull(message = "La capacidad de peso es requerida")
     @Positive(message = "La capacidad de peso debe ser positiva")
     @Column(name = "capacidad_peso", nullable = false, precision = 10, scale = 2)
-    private BigDecimal capacidadPeso; // En toneladas
+    private BigDecimal capacidadPeso; // En kg
 
     @NotNull(message = "La capacidad de volumen es requerida")
     @Positive(message = "La capacidad de volumen debe ser positiva")
     @Column(name = "capacidad_volumen", nullable = false, precision = 10, scale = 2)
     private BigDecimal capacidadVolumen; // En metros cúbicos
-
-    @NotNull(message = "El costo por km es requerido")
-    @Positive(message = "El costo por km debe ser positivo")
-    @Column(name = "costo_por_km", nullable = false, precision = 10, scale = 2)
-    private BigDecimal costoPorKm;
 
     @Column(name = "disponible")
     private Boolean disponible = true;

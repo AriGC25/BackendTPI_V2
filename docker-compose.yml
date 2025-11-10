@@ -36,6 +36,11 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
+      KC_PROXY: "passthrough"
+      # Configuración crítica: usar URLs internas para issuer
+      KC_HOSTNAME: "keycloak"
+      KC_HOSTNAME_PORT: "8080"
+      KC_HOSTNAME_PROTOCOL: "http"
     command: start-dev --import-realm
     ports:
       - "8080:8080"

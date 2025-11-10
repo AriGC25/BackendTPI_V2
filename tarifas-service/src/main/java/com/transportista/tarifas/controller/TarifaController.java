@@ -76,33 +76,41 @@ public class TarifaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OPERADOR')")
-    @Operation(summary = "Actualizar tarifa existente")
+    @Operation(summary = "Actualizar una tarifa existente por ID")
     public ResponseEntity<TarifaDTO> actualizarTarifa(@PathVariable("id") Long id, @Valid @RequestBody TarifaDTO dto) {
+        // 1. Busca la tarifa en la base de datos
         Tarifa tarifa = tarifaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada con ID: " + id));
 
+        // 2. Actualiza los campos con los valores del DTO recibido
         tarifa.setCostoPorKm(dto.getCostoPorKm());
         tarifa.setGestionFija(dto.getGestionFija());
         tarifa.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
         tarifa.setPrecioCombustiblePorLitro(dto.getPrecioCombustiblePorLitro());
         tarifa.setTarifaEstadiaDepositoPorDia(dto.getTarifaEstadiaDepositoPorDia());
+        // Opcional: También podrías permitir actualizar el tipo de tramo si es necesario
+        // tarifa.setTipoTramo(dto.getTipoTramo());
 
+        // 3. Guarda la tarifa actualizada en la base de datos
         tarifa = tarifaRepository.save(tarifa);
+
+        // 4. Devuelve la tarifa actualizada
         return ResponseEntity.ok(convertirADTO(tarifa));
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/desactivar")
     @PreAuthorize("hasRole('OPERADOR')")
-    @Operation(summary = "Desactivar tarifa")
-    public ResponseEntity<Void> eliminarTarifa(@PathVariable("id") Long id) {
+    @Operation(summary = "Desactiva una tarifa existente")
+    public ResponseEntity<Void> desactivarTarifa(@PathVariable("id") Long id) {
         Tarifa tarifa = tarifaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tarifa no encontrada"));
 
-        tarifa.setActivo(false);
+        tarifa.setActivo(false); // Lógica de desactivación
         tarifaRepository.save(tarifa);
 
         return ResponseEntity.noContent().build();
     }
+
 
     private TarifaDTO convertirADTO(Tarifa tarifa) {
         TarifaDTO dto = new TarifaDTO();

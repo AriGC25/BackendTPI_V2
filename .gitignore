@@ -65,3 +65,4 @@ spring-boot-devtools.properties
 
 # Docker
 *.pid
+.env

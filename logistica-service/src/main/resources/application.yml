@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: logistica-service
@@ -15,22 +18,19 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
-
-server:
-  port: 8082
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
 
 # API Documentation
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
-    path: /swagger-ui.html
     enabled: true
+    path: /swagger-ui.html
 
 logging:
   level:

@@ -1,3 +1,6 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: tarifas-service
@@ -21,8 +24,6 @@ spring:
         jwt:
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs}
 
-server:
-  port: 8083
 
 # API Documentation
 springdoc:

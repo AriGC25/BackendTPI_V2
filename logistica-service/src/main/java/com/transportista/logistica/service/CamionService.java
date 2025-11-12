@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,9 @@ public class CamionService {
         camion.setModelo(dto.getModelo());
         camion.setCapacidadPeso(dto.getCapacidadPeso());
         camion.setCapacidadVolumen(dto.getCapacidadVolumen());
+        camion.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
+        camion.setNombreTransportista(dto.getNombreTransportista());
+        camion.setTelefono(dto.getTelefono());
         camion.setDisponible(dto.getDisponible() != null ? dto.getDisponible() : true);
         camion.setActivo(true);
 
@@ -52,6 +56,14 @@ public class CamionService {
             .collect(Collectors.toList());
     }
 
+    public List<CamionDTO> obtenerCamionesElegibles(BigDecimal peso, BigDecimal volumen) {
+        return camionRepository.findAllByDisponibleTrueAndActivoTrue().stream()
+            .filter(camion -> camion.getCapacidadPeso().compareTo(peso) >= 0)
+            .filter(camion -> camion.getCapacidadVolumen().compareTo(volumen) >= 0)
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+    }
+
     public CamionDTO actualizarCamion(Long id, CamionDTO dto) {
         Camion camion = camionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Camión no encontrado"));
@@ -59,6 +71,9 @@ public class CamionService {
         camion.setModelo(dto.getModelo());
         camion.setCapacidadPeso(dto.getCapacidadPeso());
         camion.setCapacidadVolumen(dto.getCapacidadVolumen());
+        camion.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
+        camion.setNombreTransportista(dto.getNombreTransportista());
+        camion.setTelefono(dto.getTelefono());
         if (dto.getDisponible() != null) {
             camion.setDisponible(dto.getDisponible());
         }
@@ -84,6 +99,9 @@ public class CamionService {
         dto.setModelo(camion.getModelo());
         dto.setCapacidadPeso(camion.getCapacidadPeso());
         dto.setCapacidadVolumen(camion.getCapacidadVolumen());
+        dto.setConsumoCombustiblePorKm(camion.getConsumoCombustiblePorKm());
+        dto.setNombreTransportista(camion.getNombreTransportista());
+        dto.setTelefono(camion.getTelefono());
         dto.setDisponible(camion.getDisponible());
         dto.setActivo(camion.getActivo());
         return dto;

@@ -55,6 +55,13 @@ public class TarifaService {
         tarifa.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
         tarifa.setPrecioCombustiblePorLitro(dto.getPrecioCombustiblePorLitro());
         tarifa.setTarifaEstadiaDepositoPorDia(dto.getTarifaEstadiaDepositoPorDia());
+        tarifa.setTarifaBasePesoLigero(dto.getTarifaBasePesoLigero());
+        tarifa.setTarifaBasePesoMedio(dto.getTarifaBasePesoMedio());
+        tarifa.setTarifaBasePesoPesado(dto.getTarifaBasePesoPesado());
+        tarifa.setTarifaBaseVolumenPequeno(dto.getTarifaBaseVolumenPequeno());
+        tarifa.setTarifaBaseVolumenMediano(dto.getTarifaBaseVolumenMediano());
+        tarifa.setTarifaBaseVolumenGrande(dto.getTarifaBaseVolumenGrande());
+        tarifa.setCargoGestionPorTramo(dto.getCargoGestionPorTramo());
         tarifa.setFechaActualizacion(LocalDateTime.now());
 
         Tarifa updatedTarifa = tarifaRepository.save(tarifa);
@@ -85,6 +92,13 @@ public class TarifaService {
         dto.setConsumoCombustiblePorKm(tarifa.getConsumoCombustiblePorKm());
         dto.setPrecioCombustiblePorLitro(tarifa.getPrecioCombustiblePorLitro());
         dto.setTarifaEstadiaDepositoPorDia(tarifa.getTarifaEstadiaDepositoPorDia());
+        dto.setTarifaBasePesoLigero(tarifa.getTarifaBasePesoLigero());
+        dto.setTarifaBasePesoMedio(tarifa.getTarifaBasePesoMedio());
+        dto.setTarifaBasePesoPesado(tarifa.getTarifaBasePesoPesado());
+        dto.setTarifaBaseVolumenPequeno(tarifa.getTarifaBaseVolumenPequeno());
+        dto.setTarifaBaseVolumenMediano(tarifa.getTarifaBaseVolumenMediano());
+        dto.setTarifaBaseVolumenGrande(tarifa.getTarifaBaseVolumenGrande());
+        dto.setCargoGestionPorTramo(tarifa.getCargoGestionPorTramo());
         dto.setFechaCreacion(tarifa.getFechaCreacion());
         dto.setFechaActualizacion(tarifa.getFechaActualizacion());
         dto.setActivo(tarifa.getActivo());
@@ -99,6 +113,13 @@ public class TarifaService {
         tarifa.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
         tarifa.setPrecioCombustiblePorLitro(dto.getPrecioCombustiblePorLitro());
         tarifa.setTarifaEstadiaDepositoPorDia(dto.getTarifaEstadiaDepositoPorDia());
+        tarifa.setTarifaBasePesoLigero(dto.getTarifaBasePesoLigero());
+        tarifa.setTarifaBasePesoMedio(dto.getTarifaBasePesoMedio());
+        tarifa.setTarifaBasePesoPesado(dto.getTarifaBasePesoPesado());
+        tarifa.setTarifaBaseVolumenPequeno(dto.getTarifaBaseVolumenPequeno());
+        tarifa.setTarifaBaseVolumenMediano(dto.getTarifaBaseVolumenMediano());
+        tarifa.setTarifaBaseVolumenGrande(dto.getTarifaBaseVolumenGrande());
+        tarifa.setCargoGestionPorTramo(dto.getCargoGestionPorTramo());
         return tarifa;
     }
 }

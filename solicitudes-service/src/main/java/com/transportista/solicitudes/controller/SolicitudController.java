@@ -2,6 +2,7 @@ package com.transportista.solicitudes.controller;
 
 import com.transportista.solicitudes.dto.SolicitudRequestDTO;
 import com.transportista.solicitudes.dto.SolicitudResponseDTO;
+import com.transportista.solicitudes.dto.SeguimientoEstadoDTO;
 import com.transportista.solicitudes.service.SolicitudService;
 import com.transportista.solicitudes.service.CalculoCostoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,5 +115,13 @@ public class SolicitudController {
     public ResponseEntity<SolicitudResponseDTO> actualizarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado) {
         SolicitudResponseDTO solicitudActualizada = solicitudService.actualizarEstado(id, estado);
         return ResponseEntity.ok(solicitudActualizada);
+    }
+
+    @GetMapping("/{id}/seguimiento")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")
+    @Operation(summary = "Obtener seguimiento de solicitud", description = "Obtiene el historial de estados de una solicitud en orden cronológico")
+    public ResponseEntity<List<SeguimientoEstadoDTO>> obtenerSeguimiento(@PathVariable("id") Long id) {
+        List<SeguimientoEstadoDTO> seguimiento = solicitudService.obtenerSeguimiento(id);
+        return ResponseEntity.ok(seguimiento);
     }
 }

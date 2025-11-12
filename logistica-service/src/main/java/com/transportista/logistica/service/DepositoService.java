@@ -20,6 +20,7 @@ public class DepositoService {
     public DepositoDTO crearDeposito(DepositoDTO dto) {
         Deposito deposito = new Deposito();
         deposito.setNombre(dto.getNombre());
+        deposito.setIdentificacion(dto.getIdentificacion());
         deposito.setDireccion(dto.getDireccion());
         deposito.setLatitud(dto.getLatitud());
         deposito.setLongitud(dto.getLongitud());
@@ -54,11 +55,15 @@ public class DepositoService {
             .orElseThrow(() -> new RuntimeException("Depósito no encontrado"));
 
         deposito.setNombre(dto.getNombre());
+        deposito.setIdentificacion(dto.getIdentificacion());
         deposito.setDireccion(dto.getDireccion());
         deposito.setLatitud(dto.getLatitud());
         deposito.setLongitud(dto.getLongitud());
         if (dto.getCapacidadMaxima() != null) {
             deposito.setCapacidadMaxima(dto.getCapacidadMaxima());
+        }
+        if (dto.getCapacidadActual() != null) {
+            deposito.setCapacidadActual(dto.getCapacidadActual());
         }
         if (dto.getActivo() != null) {
             deposito.setActivo(dto.getActivo());
@@ -79,6 +84,7 @@ public class DepositoService {
         DepositoDTO dto = new DepositoDTO();
         dto.setId(deposito.getId());
         dto.setNombre(deposito.getNombre());
+        dto.setIdentificacion(deposito.getIdentificacion());
         dto.setDireccion(deposito.getDireccion());
         dto.setLatitud(deposito.getLatitud());
         dto.setLongitud(deposito.getLongitud());

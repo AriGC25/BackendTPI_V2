@@ -10,6 +10,9 @@ CREATE DATABASE keycloak_db;
 -- Las tablas serán creadas automáticamente por Hibernate cuando los servicios inicien
 -- Los datos se pueden insertar después manualmente o mediante la API
 
+-- NOTA: La tabla seguimiento_estados será creada automáticamente por Hibernate
+-- No es necesario crearla aquí para evitar errores de dependencias circulares
+
 -- Este script solo crea las bases de datos necesarias
 -- Los datos de prueba se insertarán después del primer inicio
 

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -60,5 +61,15 @@ public class CamionController {
     public ResponseEntity<Void> eliminarCamion(@PathVariable("id") Long id) {
         camionService.eliminarCamion(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/elegibles")
+    @Operation(summary = "Obtener camiones elegibles",
+               description = "Obtiene camiones que pueden transportar un contenedor según peso y volumen")
+    public ResponseEntity<List<CamionDTO>> obtenerCamionesElegibles(
+            @RequestParam("peso") BigDecimal peso,
+            @RequestParam("volumen") BigDecimal volumen) {
+        List<CamionDTO> camiones = camionService.obtenerCamionesElegibles(peso, volumen);
+        return ResponseEntity.ok(camiones);
     }
 }

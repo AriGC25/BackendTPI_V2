@@ -32,5 +32,8 @@ public class TramoRequestDTO {
     private Long depositoDestinoId;
 
     private BigDecimal distanciaKm;
-    private BigDecimal costoEstimado;
+    private BigDecimal costoAproximado;
+    private BigDecimal costoReal;
+
+    private Integer diasEstadiaDeposito; // Días de estadía en depósito (si aplica)
 }

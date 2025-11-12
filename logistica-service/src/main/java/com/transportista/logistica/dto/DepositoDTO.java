@@ -18,6 +18,8 @@ public class DepositoDTO {
     @NotBlank(message = "El nombre del depósito es requerido")
     private String nombre;
     
+    private String identificacion;
+
     @NotBlank(message = "La dirección es requerida")
     private String direccion;
     

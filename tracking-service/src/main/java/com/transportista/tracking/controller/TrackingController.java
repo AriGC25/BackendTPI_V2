@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tracking")
@@ -18,6 +19,30 @@ public class TrackingController {
 
     @Autowired
     private TrackingService trackingService;
+
+    @PostMapping("/registrar")
+    @Operation(summary = "Registrar evento de tracking", description = "Registra un nuevo evento de tracking para un contenedor")
+    public ResponseEntity<TrackingEventoDTO> registrarEvento(@RequestBody Map<String, Object> eventoData) {
+        Long contenedorId = ((Number) eventoData.get("contenedorId")).longValue();
+        Long solicitudId = eventoData.get("solicitudId") != null ? ((Number) eventoData.get("solicitudId")).longValue() : null;
+        String estado = (String) eventoData.get("estado");
+        String ubicacion = (String) eventoData.get("ubicacion");
+        String descripcion = (String) eventoData.get("descripcion");
+
+        TrackingEventoDTO evento = trackingService.registrarEvento(contenedorId, solicitudId, estado, ubicacion, descripcion);
+        return ResponseEntity.ok(evento);
+    }
+
+    @PostMapping("/inicializar")
+    @Operation(summary = "Inicializar eventos existentes", description = "Genera eventos de tracking para solicitudes que no tienen eventos registrados")
+    public ResponseEntity<Map<String, Object>> inicializarEventos() {
+        int eventosCreados = trackingService.inicializarEventosExistentes();
+        Map<String, Object> response = Map.of(
+            "mensaje", "Eventos inicializados correctamente",
+            "eventosCreados", eventosCreados
+        );
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/contenedor/{contenedorId}")
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'TRANSPORTISTA')")

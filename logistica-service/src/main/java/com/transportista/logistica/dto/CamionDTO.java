@@ -30,6 +30,12 @@ public class CamionDTO {
     @Positive(message = "La capacidad de volumen debe ser positiva")
     private BigDecimal capacidadVolumen;
     
+    @Positive(message = "El consumo de combustible debe ser positivo")
+    private BigDecimal consumoCombustiblePorKm; // Litros por kilómetro
+
+    private String nombreTransportista;
+    private String telefono;
+
     private Boolean disponible;
     private Boolean activo;
 }

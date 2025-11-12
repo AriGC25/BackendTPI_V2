@@ -40,6 +40,15 @@ public class Camion {
     @Column(name = "capacidad_volumen", nullable = false, precision = 10, scale = 2)
     private BigDecimal capacidadVolumen; // En metros cúbicos
 
+    @Column(name = "consumo_combustible_por_km", precision = 5, scale = 2)
+    private BigDecimal consumoCombustiblePorKm; // Litros por kilómetro (ej: 0.35)
+
+    @Column(name = "nombre_transportista", length = 150)
+    private String nombreTransportista;
+
+    @Column(name = "telefono", length = 20)
+    private String telefono;
+
     @Column(name = "disponible")
     private Boolean disponible = true;
 

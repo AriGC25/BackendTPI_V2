@@ -15,4 +15,7 @@ public interface TarifaRepository extends JpaRepository<Tarifa, Long> {
     Optional<Tarifa> findByTipoTramoAndActivoTrue(String tipoTramo);
     
     List<Tarifa> findByTipoTramo(String tipoTramo);
+
+    // Nuevo método para obtener la tarifa activa más reciente
+    Optional<Tarifa> findFirstByActivoTrueOrderByIdDesc();
 }

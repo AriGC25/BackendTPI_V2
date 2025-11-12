@@ -31,7 +31,7 @@ public class Tramo {
     private Integer ordenTramo; // Para mantener el orden de los tramos
 
     @Column(name = "estado", nullable = false, length = 30)
-    private String estado = "PENDIENTE"; // PENDIENTE, ASIGNADO, EN_CURSO, COMPLETADO
+    private String estado = "estimado"; // estimado, asignado, iniciado, finalizado
 
     @NotNull(message = "La dirección de origen es requerida")
     @Column(name = "direccion_origen", nullable = false)
@@ -57,6 +57,21 @@ public class Tramo {
     @Column(name = "longitud_destino", nullable = false, precision = 10, scale = 7)
     private BigDecimal longitudDestino;
 
+    @Column(name = "tiempo_estimado_minutos")
+    private Integer tiempoEstimadoMinutos; // Tiempo estimado del tramo en minutos
+
+    @Column(name = "distancia_km", precision = 10, scale = 2)
+    private BigDecimal distanciaKm; // Distancia del tramo en kilómetros
+
+    @Column(name = "costo_aproximado", precision = 10, scale = 2)
+    private BigDecimal costoAproximado; // Costo aproximado del tramo
+
+    @Column(name = "costo_real", precision = 10, scale = 2)
+    private BigDecimal costoReal; // Costo real del tramo
+
+    @Column(name = "dias_estadia_deposito")
+    private Integer diasEstadiaDeposito; // Días de estadía en depósito (si aplica)
+
     @Column(name = "camion_id")
     private Long camionId;
 
@@ -80,7 +95,7 @@ public class Tramo {
         fechaCreacion = LocalDateTime.now();
         fechaActualizacion = LocalDateTime.now();
         if (estado == null) {
-            estado = "PENDIENTE";
+            estado = "estimado";
         }
     }
 

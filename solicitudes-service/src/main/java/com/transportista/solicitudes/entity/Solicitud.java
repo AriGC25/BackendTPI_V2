@@ -62,11 +62,17 @@ public class Solicitud {
     @Column(name = "estado", nullable = false, length = 30)
     private String estado = "PENDIENTE"; // PENDIENTE, RUTA_ASIGNADA, EN_PROCESO, COMPLETADA, CANCELADA
 
+    @Column(name = "costo_estimado", precision = 10, scale = 2)
+    private BigDecimal costoEstimado;
+
     @Column(name = "costo_total", precision = 10, scale = 2)
     private BigDecimal costoTotal;
 
     @Column(name = "tiempo_estimado_horas", precision = 5, scale = 2)
     private BigDecimal tiempoEstimadoHoras;
+
+    @Column(name = "tiempo_real_horas", precision = 5, scale = 2)
+    private BigDecimal tiempoRealHoras;
 
     @Column(name = "fecha_solicitud")
     private LocalDateTime fechaSolicitud;

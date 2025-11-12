@@ -38,6 +38,15 @@ public class TarifaDTO {
 
     private BigDecimal tarifaEstadiaDepositoPorDia;
 
+    // Nuevos campos: Costos diferenciados por capacidad
+    private BigDecimal tarifaBasePesoLigero;
+    private BigDecimal tarifaBasePesoMedio;
+    private BigDecimal tarifaBasePesoPesado;
+    private BigDecimal tarifaBaseVolumenPequeno;
+    private BigDecimal tarifaBaseVolumenMediano;
+    private BigDecimal tarifaBaseVolumenGrande;
+    private BigDecimal cargoGestionPorTramo;
+
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaActualizacion;

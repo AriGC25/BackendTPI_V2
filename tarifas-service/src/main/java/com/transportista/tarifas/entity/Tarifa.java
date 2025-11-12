@@ -52,6 +52,30 @@ public class Tarifa {
     @Column(name = "tarifa_estadia_deposito_por_dia", precision = 10, scale = 2)
     private BigDecimal tarifaEstadiaDepositoPorDia;
 
+    //Costos diferenciados por capacidad de PESO
+    @Column(name = "tarifa_base_peso_ligero", precision = 10, scale = 2)
+    private BigDecimal tarifaBasePesoLigero; // < 5000 kg
+
+    @Column(name = "tarifa_base_peso_medio", precision = 10, scale = 2)
+    private BigDecimal tarifaBasePesoMedio; // 5000-15000 kg
+
+    @Column(name = "tarifa_base_peso_pesado", precision = 10, scale = 2)
+    private BigDecimal tarifaBasePesoPesado; // > 15000 kg
+
+    //Costos diferenciados por capacidad de VOLUMEN
+    @Column(name = "tarifa_base_volumen_pequeno", precision = 10, scale = 2)
+    private BigDecimal tarifaBaseVolumenPequeno; // < 20 m³
+
+    @Column(name = "tarifa_base_volumen_mediano", precision = 10, scale = 2)
+    private BigDecimal tarifaBaseVolumenMediano; // 20-50 m³
+
+    @Column(name = "tarifa_base_volumen_grande", precision = 10, scale = 2)
+    private BigDecimal tarifaBaseVolumenGrande; // > 50 m³
+
+    // NUEVO CAMPO: Cargo de gestión por tramo adicional
+    @Column(name = "cargo_gestion_por_tramo", precision = 10, scale = 2)
+    private BigDecimal cargoGestionPorTramo; // Cargo adicional por cada tramo
+
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 

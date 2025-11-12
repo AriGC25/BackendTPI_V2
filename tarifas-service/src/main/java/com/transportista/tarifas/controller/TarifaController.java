@@ -1,8 +1,9 @@
 package com.transportista.tarifas.controller;
 
-import com.transportista.tarifas.dto.TarifaDTO;
+import com.transportista.tarifas.dto.*;
 import com.transportista.tarifas.entity.Tarifa;
 import com.transportista.tarifas.repository.TarifaRepository;
+import com.transportista.tarifas.service.TarifaCalculatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class TarifaController {
 
     @Autowired
     private TarifaRepository tarifaRepository;
+
+    @Autowired
+    private TarifaCalculatorService calculatorService;
 
     @GetMapping
     @PreAuthorize("hasRole('OPERADOR')")
@@ -68,6 +72,14 @@ public class TarifaController {
         tarifa.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
         tarifa.setPrecioCombustiblePorLitro(dto.getPrecioCombustiblePorLitro());
         tarifa.setTarifaEstadiaDepositoPorDia(dto.getTarifaEstadiaDepositoPorDia());
+        tarifa.setTarifaBasePesoLigero(dto.getTarifaBasePesoLigero());
+        tarifa.setTarifaBasePesoMedio(dto.getTarifaBasePesoMedio());
+        tarifa.setTarifaBasePesoPesado(dto.getTarifaBasePesoPesado());
+        tarifa.setTarifaBaseVolumenPequeno(dto.getTarifaBaseVolumenPequeno());
+        tarifa.setTarifaBaseVolumenMediano(dto.getTarifaBaseVolumenMediano());
+        tarifa.setTarifaBaseVolumenGrande(dto.getTarifaBaseVolumenGrande());
+        tarifa.setCargoGestionPorTramo(dto.getCargoGestionPorTramo());
+
         tarifa.setActivo(true);
 
         tarifa = tarifaRepository.save(tarifa);
@@ -88,6 +100,14 @@ public class TarifaController {
         tarifa.setConsumoCombustiblePorKm(dto.getConsumoCombustiblePorKm());
         tarifa.setPrecioCombustiblePorLitro(dto.getPrecioCombustiblePorLitro());
         tarifa.setTarifaEstadiaDepositoPorDia(dto.getTarifaEstadiaDepositoPorDia());
+        tarifa.setTarifaBasePesoLigero(dto.getTarifaBasePesoLigero());
+        tarifa.setTarifaBasePesoMedio(dto.getTarifaBasePesoMedio());
+        tarifa.setTarifaBasePesoPesado(dto.getTarifaBasePesoPesado());
+        tarifa.setTarifaBaseVolumenPequeno(dto.getTarifaBaseVolumenPequeno());
+        tarifa.setTarifaBaseVolumenMediano(dto.getTarifaBaseVolumenMediano());
+        tarifa.setTarifaBaseVolumenGrande(dto.getTarifaBaseVolumenGrande());
+        tarifa.setCargoGestionPorTramo(dto.getCargoGestionPorTramo());
+
         // Opcional: También podrías permitir actualizar el tipo de tramo si es necesario
         // tarifa.setTipoTramo(dto.getTipoTramo());
 
@@ -111,6 +131,31 @@ public class TarifaController {
         return ResponseEntity.noContent().build();
     }
 
+    // ==================== NUEVOS ENDPOINTS DE CÁLCULO ====================
+
+    @PostMapping("/calcular/completa")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
+    @Operation(summary = "Calcular tarifa completa de un envío",
+            description = "Calcula la tarifa total considerando: cargo de gestión, costo por km, combustible y estadía en depósitos")
+    public ResponseEntity<TarifaCalculadaResponse> calcularTarifaCompleta(
+            @Valid @RequestBody CalculoTarifaRequest request) {
+
+        TarifaCalculadaResponse respuesta = calculatorService.calcularTarifaCompleta(request);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @PostMapping("/calcular/aproximada")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
+    @Operation(summary = "Calcular tarifa aproximada",
+            description = "Calcula tarifa aproximada promediando entre camiones elegibles según características del contenedor")
+    public ResponseEntity<TarifaCalculadaResponse> calcularTarifaAproximada(
+            @Valid @RequestBody CalculoTarifaAproximadaRequest request) {
+
+        TarifaCalculadaResponse respuesta = calculatorService.calcularTarifaAproximada(request);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    // ==================== MÉTODOS DE CONVERSIÓN ====================
 
     private TarifaDTO convertirADTO(Tarifa tarifa) {
         TarifaDTO dto = new TarifaDTO();
@@ -121,6 +166,15 @@ public class TarifaController {
         dto.setConsumoCombustiblePorKm(tarifa.getConsumoCombustiblePorKm());
         dto.setPrecioCombustiblePorLitro(tarifa.getPrecioCombustiblePorLitro());
         dto.setTarifaEstadiaDepositoPorDia(tarifa.getTarifaEstadiaDepositoPorDia());
+        dto.setTarifaBasePesoLigero(tarifa.getTarifaBasePesoLigero());
+        dto.setTarifaBasePesoMedio(tarifa.getTarifaBasePesoMedio());
+        dto.setTarifaBasePesoPesado(tarifa.getTarifaBasePesoPesado());
+        dto.setTarifaBaseVolumenPequeno(tarifa.getTarifaBaseVolumenPequeno());
+        dto.setTarifaBaseVolumenMediano(tarifa.getTarifaBaseVolumenMediano());
+        dto.setTarifaBaseVolumenGrande(tarifa.getTarifaBaseVolumenGrande());
+        dto.setCargoGestionPorTramo(tarifa.getCargoGestionPorTramo());
+        dto.setFechaCreacion(tarifa.getFechaCreacion());
+        dto.setFechaActualizacion(tarifa.getFechaActualizacion());
         dto.setActivo(tarifa.getActivo());
         return dto;
     }

@@ -8,7 +8,7 @@ spring:
         - id: solicitudes-service-direct
           uri: http://solicitudes-service:8081
           predicates:
-            - Path=/solicitudes/**,/rutas/**,/tramos/**
+            - Path=/solicitudes/**,/rutas/**,/tramos/**,/contenedores/**
           filters:
             - AddRequestHeader=X-Gateway,API-Gateway
         - id: logistica-service-direct
@@ -34,7 +34,7 @@ spring:
         - id: solicitudes-service-api
           uri: http://solicitudes-service:8081
           predicates:
-            - Path=/api/solicitudes/**,/api/rutas/**,/api/tramos/**
+            - Path=/api/solicitudes/**,/api/rutas/**,/api/tramos/**,/api/contenedores/**
           filters:
             - StripPrefix=1
             - AddRequestHeader=X-Gateway,API-Gateway

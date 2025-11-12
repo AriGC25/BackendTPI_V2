@@ -25,6 +25,9 @@ public class Deposito {
     @Column(nullable = false, unique = true)
     private String nombre;
 
+    @Column(name = "identificacion", length = 50)
+    private String identificacion;
+
     @NotBlank(message = "La dirección es requerida")
     @Column(nullable = false)
     private String direccion;

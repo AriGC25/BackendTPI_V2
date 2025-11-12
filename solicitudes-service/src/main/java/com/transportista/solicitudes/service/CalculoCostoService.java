@@ -8,7 +8,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -31,6 +30,7 @@ public class CalculoCostoService {
 
     /**
      * Calcula el costo total de una solicitud con todas las tarifas aplicadas
+     * Incluye: costos por km, estadías en depósito y combustible de camiones específicos
      */
     public BigDecimal calcularCostoTotal(Long solicitudId) {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
@@ -47,36 +47,146 @@ public class CalculoCostoService {
 
         BigDecimal costoTotal = BigDecimal.ZERO;
 
-        // 1. Costo por kilómetro de cada tramo
+        // 1. Sumar costos de todos los tramos (traslado por kilómetro + combustible por camión específico)
         for (Tramo tramo : tramos) {
-            BigDecimal distancia = googleMapsService.calcularDistanciaReal(
-                    tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
-                    tramo.getLatitudDestino(), tramo.getLongitudDestino()
-            );
-
-            // Obtener tarifa del tipo de tramo desde tarifas-service
-            BigDecimal costoPorKm = obtenerCostoPorKm(tramo.getTipoTramo());
-            BigDecimal costoTramo = distancia.multiply(costoPorKm);
-
-            // Si tiene camión asignado, agregar costo de combustible
-            if (tramo.getCamionId() != null) {
-                BigDecimal costoCombustible = calcularCostoCombustible(
-                        tramo.getCamionId(), distancia);
-                costoTramo = costoTramo.add(costoCombustible);
-            }
-
+            BigDecimal costoTramo = calcularCostoTramo(tramo);
             costoTotal = costoTotal.add(costoTramo);
         }
 
-        // 2. Costo de estadías en depósitos
-        BigDecimal costoEstadias = calcularCostoEstadias(tramos);
+        // 2. Sumar costos de estadías en depósitos
+        BigDecimal costoEstadias = calcularCostoEstadiasDetallado(tramos);
         costoTotal = costoTotal.add(costoEstadias);
 
-        // 3. Factor por peso y volumen del contenedor
-        BigDecimal factor = calcularFactorContenedor(solicitud.getContenedor());
-        costoTotal = costoTotal.multiply(factor);
-
         return costoTotal.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Calcula el costo de un tramo individual incluyendo:
+     * - Costo por kilómetro según tarifa del tipo de tramo
+     * - Costo de combustible del camión específico asignado
+     */
+    private BigDecimal calcularCostoTramo(Tramo tramo) {
+        BigDecimal costoTramo = BigDecimal.ZERO;
+
+        // Obtener o calcular distancia del tramo
+        BigDecimal distancia = tramo.getDistanciaKm();
+        if (distancia == null || distancia.compareTo(BigDecimal.ZERO) <= 0) {
+            distancia = googleMapsService.calcularDistanciaReal(
+                    tramo.getLatitudOrigen(), tramo.getLongitudOrigen(),
+                    tramo.getLatitudDestino(), tramo.getLongitudDestino()
+            );
+        }
+
+        // 1. Costo por kilómetro según tarifa del tipo de tramo
+        BigDecimal costoPorKm = obtenerCostoPorKm(tramo.getTipoTramo());
+        BigDecimal costoDistancia = distancia.multiply(costoPorKm);
+        costoTramo = costoTramo.add(costoDistancia);
+
+        // 2. Costo de combustible del camión específico asignado
+        if (tramo.getCamionId() != null) {
+            BigDecimal costoCombustible = calcularCostoCombustibleCamionEspecifico(
+                    tramo.getCamionId(), tramo.getTipoTramo(), distancia);
+            costoTramo = costoTramo.add(costoCombustible);
+        }
+
+        return costoTramo;
+    }
+
+    /**
+     * Calcula el costo de estadías en depósitos de forma detallada
+     * Considera los días de estadía específicos de cada tramo
+     */
+    private BigDecimal calcularCostoEstadiasDetallado(List<Tramo> tramos) {
+        BigDecimal costoTotalEstadias = BigDecimal.ZERO;
+
+        for (Tramo tramo : tramos) {
+            // Solo aplicar costo de estadía si el tramo termina en un depósito
+            if (esTramoConEstadiaEnDeposito(tramo.getTipoTramo())) {
+                // Obtener días de estadía (por defecto 1 día si no está especificado)
+                Integer diasEstadia = tramo.getDiasEstadiaDeposito() != null
+                        ? tramo.getDiasEstadiaDeposito()
+                        : 1;
+
+                // Obtener tarifa de estadía desde tarifas-service
+                BigDecimal tarifaPorDia = obtenerTarifaEstadiaDeposito(tramo.getTipoTramo());
+
+                BigDecimal costoEstadia = tarifaPorDia.multiply(BigDecimal.valueOf(diasEstadia));
+                costoTotalEstadias = costoTotalEstadias.add(costoEstadia);
+            }
+        }
+
+        return costoTotalEstadias;
+    }
+
+    /**
+     * Determina si un tipo de tramo incluye estadía en depósito
+     */
+    private boolean esTramoConEstadiaEnDeposito(String tipoTramo) {
+        return "ORIGEN_DEPOSITO".equals(tipoTramo) ||
+                "DEPOSITO_DEPOSITO".equals(tipoTramo);
+        // DEPOSITO_DESTINO no cuenta porque es el punto final de descarga
+        // ORIGEN_DESTINO no tiene depósitos intermedios
+    }
+
+    /**
+     * Calcula el costo de combustible usando el consumo específico del camión asignado
+     */
+    private BigDecimal calcularCostoCombustibleCamionEspecifico(Long camionId, String tipoTramo, BigDecimal distancia) {
+        try {
+            // Obtener datos del camión desde logistica-service
+            String urlCamion = "http://logistica-service:8082/camiones/" + camionId;
+            var camion = webClientBuilder.build()
+                    .get()
+                    .uri(urlCamion)
+                    .retrieve()
+                    .bodyToMono(CamionResponse.class)
+                    .block();
+
+            // Obtener precio de combustible desde tarifas-service
+            String urlTarifa = "http://tarifas-service:8083/tarifas/tipo/" + tipoTramo;
+            var tarifa = webClientBuilder.build()
+                    .get()
+                    .uri(urlTarifa)
+                    .retrieve()
+                    .bodyToMono(TarifaResponse.class)
+                    .block();
+
+            if (camion != null && camion.getConsumoCombustiblePorKm() != null &&
+                    tarifa != null && tarifa.getPrecioCombustiblePorLitro() != null) {
+
+                // Costo = distancia × consumo del camión × precio por litro
+                BigDecimal litrosConsumidos = distancia.multiply(camion.getConsumoCombustiblePorKm());
+                BigDecimal costoCombustible = litrosConsumidos.multiply(tarifa.getPrecioCombustiblePorLitro());
+
+                return costoCombustible;
+            }
+        } catch (Exception e) {
+            // Si falla la consulta, usar valores por defecto
+        }
+
+        // Valor por defecto si no se puede obtener datos específicos
+        return calcularCostoCombustible(camionId, distancia);
+    }
+
+    /**
+     * Obtiene la tarifa de estadía en depósito desde tarifas-service
+     */
+    private BigDecimal obtenerTarifaEstadiaDeposito(String tipoTramo) {
+        try {
+            String url = "http://tarifas-service:8083/tarifas/tipo/" + tipoTramo;
+            var response = webClientBuilder.build()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(TarifaResponse.class)
+                    .block();
+
+            return response != null && response.getTarifaEstadiaDepositoPorDia() != null
+                    ? response.getTarifaEstadiaDepositoPorDia()
+                    : BigDecimal.valueOf(500); // Valor por defecto
+        } catch (Exception e) {
+            return BigDecimal.valueOf(500); // Valor por defecto si falla
+        }
     }
 
     /**
@@ -97,7 +207,8 @@ public class CalculoCostoService {
 
         BigDecimal tiempoTotal = BigDecimal.ZERO;
         final BigDecimal VELOCIDAD_PROMEDIO_KMH = BigDecimal.valueOf(60); // 60 km/h
-        final BigDecimal TIEMPO_CARGA_DESCARGA_HORAS = BigDecimal.valueOf(2); // 2 horas
+        final BigDecimal TIEMPO_CARGA_DESCARGA_HORAS = BigDecimal.valueOf(2); // 2 horas por tramo
+        final BigDecimal HORAS_POR_DIA_ESTADIA = BigDecimal.valueOf(24); // 24 horas por día
 
         for (Tramo tramo : tramos) {
             BigDecimal distancia = googleMapsService.calcularDistanciaReal(
@@ -107,6 +218,15 @@ public class CalculoCostoService {
 
             BigDecimal tiempoViaje = distancia.divide(VELOCIDAD_PROMEDIO_KMH, 2, RoundingMode.HALF_UP);
             tiempoTotal = tiempoTotal.add(tiempoViaje).add(TIEMPO_CARGA_DESCARGA_HORAS);
+
+            // Agregar tiempo de estadía en depósito si aplica
+            if (esTramoConEstadiaEnDeposito(tramo.getTipoTramo())) {
+                Integer diasEstadia = tramo.getDiasEstadiaDeposito() != null
+                        ? tramo.getDiasEstadiaDeposito()
+                        : 1;
+                BigDecimal tiempoEstadia = HORAS_POR_DIA_ESTADIA.multiply(BigDecimal.valueOf(diasEstadia));
+                tiempoTotal = tiempoTotal.add(tiempoEstadia);
+            }
         }
 
         return tiempoTotal.setScale(2, RoundingMode.HALF_UP);
@@ -203,16 +323,6 @@ public class CalculoCostoService {
         return BigDecimal.ZERO;
     }
 
-    private BigDecimal calcularCostoEstadias(List<Tramo> tramos) {
-        final BigDecimal COSTO_DIA_DEPOSITO = BigDecimal.valueOf(500);
-        int cantidadDepositosIntermedios = (int) tramos.stream()
-                .filter(t -> "DEPOSITO_DEPOSITO".equals(t.getTipoTramo()) ||
-                        "ORIGEN_DEPOSITO".equals(t.getTipoTramo()))
-                .count();
-
-        return COSTO_DIA_DEPOSITO.multiply(BigDecimal.valueOf(cantidadDepositosIntermedios));
-    }
-
     private BigDecimal calcularFactorContenedor(Contenedor contenedor) {
         // Factor basado en peso y volumen
         BigDecimal pesoFactor = contenedor.getPeso().divide(BigDecimal.valueOf(20000), 4, RoundingMode.HALF_UP);
@@ -225,13 +335,41 @@ public class CalculoCostoService {
     // DTOs internos
     static class TarifaResponse {
         private BigDecimal costoPorKm;
-        public BigDecimal getCostoPorKm() { return costoPorKm; }
-        public void setCostoPorKm(BigDecimal costoPorKm) { this.costoPorKm = costoPorKm; }
+        private BigDecimal tarifaEstadiaDepositoPorDia;
+        private BigDecimal precioCombustiblePorLitro;
+
+        public BigDecimal getCostoPorKm() {
+            return costoPorKm;
+        }
+
+        public void setCostoPorKm(BigDecimal costoPorKm) {
+            this.costoPorKm = costoPorKm;
+        }
+
+        public BigDecimal getTarifaEstadiaDepositoPorDia() {
+            return tarifaEstadiaDepositoPorDia;
+        }
+
+        public void setTarifaEstadiaDepositoPorDia(BigDecimal tarifaEstadiaDepositoPorDia) {
+            this.tarifaEstadiaDepositoPorDia = tarifaEstadiaDepositoPorDia;
+        }
+
+        public BigDecimal getPrecioCombustiblePorLitro() {
+            return precioCombustiblePorLitro;
+        }
+
+        public void setPrecioCombustiblePorLitro(BigDecimal precioCombustiblePorLitro) {
+            this.precioCombustiblePorLitro = precioCombustiblePorLitro;
+        }
     }
 
     static class CamionResponse {
         private BigDecimal consumoCombustiblePorKm;
-        public BigDecimal getConsumoCombustiblePorKm() { return consumoCombustiblePorKm; }
+
+        public BigDecimal getConsumoCombustiblePorKm() {
+            return consumoCombustiblePorKm;
+        }
+
         public void setConsumoCombustiblePorKm(BigDecimal consumoCombustiblePorKm) {
             this.consumoCombustiblePorKm = consumoCombustiblePorKm;
         }

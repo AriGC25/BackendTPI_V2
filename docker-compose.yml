@@ -68,6 +68,8 @@ services:
     environment:
       KEYCLOAK_JWK_URI: http://host.docker.internal:8080/realms/transportista-realm/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://localhost:8080/realms/transportista-realm
+    volumes:
+      - ./logs/api-gateway:/logs
     depends_on:
       keycloak:
         condition: service_healthy
@@ -101,6 +103,8 @@ services:
       DB_HOST: postgres
       DB_USER: transportista_user
       DB_PASSWORD: transportista_pass
+    volumes:
+      - ./logs/solicitudes-service:/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -125,6 +129,8 @@ services:
       SPRING_DATASOURCE_USERNAME: transportista_user
       SPRING_DATASOURCE_PASSWORD: transportista_pass
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    volumes:
+      - ./logs/logistica-service:/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -150,6 +156,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: transportista_pass
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+    volumes:
+      - ./logs/tarifas-service:/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -174,6 +182,8 @@ services:
       SPRING_DATASOURCE_USERNAME: transportista_user
       SPRING_DATASOURCE_PASSWORD: transportista_pass
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/transportista-realm/protocol/openid-connect/certs
+    volumes:
+      - ./logs/tracking-service:/logs
     depends_on:
       postgres:
         condition: service_healthy

@@ -899,6 +899,258 @@
       "description": "Gestión completa de camiones - Solo OPERADOR"
     },
     {
+      "name": "📦 OPERADOR - Gestión de Contenedores",
+      "item": [
+        {
+          "name": "1. Crear Contenedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('contenedor_manual_id', jsonData.id);",
+                  "    console.log('✓ Contenedor creado con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"peso\": 5000.0,\n  \"volumen\": 25.0,\n  \"clienteId\": {{cliente_id}},\n  \"descripcion\": \"Mercadería general\",\n  \"estado\": \"PENDIENTE\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/contenedores",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores"]
+            },
+            "description": "✅ VERIFICADO\nCrea un nuevo contenedor en el sistema.\n\nCampos requeridos:\n✓ peso: Peso en kg\n✓ volumen: Volumen en m³\n✓ clienteId: ID del cliente propietario\n✓ descripcion: Descripción del contenido\n✓ estado: Estado inicial (PENDIENTE, EN_TRANSITO, EN_DEPOSITO, ENTREGADO)"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Listar Todos los Contenedores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores"]
+            },
+            "description": "✅ VERIFICADO\nObtiene lista completa de contenedores del sistema (solo OPERADOR)"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Listar Contenedores por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/estado/PENDIENTE",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "estado", "PENDIENTE"]
+            },
+            "description": "✅ VERIFICADO - SOLO OPERADOR\nFiltra contenedores por estado específico.\n\nEstados válidos:\n✓ PENDIENTE: Contenedores sin asignar a ruta\n✓ EN_TRANSITO: Contenedores en camino\n✓ EN_DEPOSITO: Contenedores almacenados\n✓ ENTREGADO: Contenedores entregados al destino\n\nÚtil para:\n- Gestionar contenedores pendientes de asignación\n- Monitorear contenedores en tránsito\n- Controlar inventario en depósitos"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Listar Contenedores Pendientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/pendientes",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "pendientes"]
+            },
+            "description": "✅ VERIFICADO - SOLO OPERADOR\nObtiene todos los contenedores en estado PENDIENTE (sin ubicación)."
+          },
+          "response": []
+        },
+        {
+          "name": "4b. Listar Contenedores Pendientes CON UBICACIÓN",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/pendientes/con-ubicacion",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "pendientes", "con-ubicacion"]
+            },
+            "description": "✅ NUEVO ENDPOINT - SOLO OPERADOR\nObtiene todos los contenedores en estado PENDIENTE con información completa de ubicación.\n\nInformación incluida:\n✓ Datos del contenedor (peso, volumen, descripción)\n✓ Número de solicitud asociada\n✓ Estado de la solicitud\n✓ Ubicación de origen (dirección + coordenadas GPS)\n✓ Ubicación de destino (dirección + coordenadas GPS)\n✓ Ubicación actual determinada por estado\n✓ Descripción de la ubicación actual\n✓ Tiempo estimado de entrega\n✓ Fecha estimada de entrega\n\nUbicación actual se determina por:\n- PENDIENTE: En origen, esperando asignación\n- EN_TRANSITO: En camino entre origen y destino\n- EN_DEPOSITO: En depósito intermedio\n- ENTREGADO: En destino final\n\nIdeal para:\n→ Monitoreo en tiempo real\n→ Gestión de contenedores pendientes\n→ Planificación de rutas"
+          },
+          "response": []
+        },
+        {
+          "name": "4c. Listar Contenedores por Estado CON UBICACIÓN",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/estado/EN_TRANSITO/con-ubicacion",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "estado", "EN_TRANSITO", "con-ubicacion"]
+            },
+            "description": "✅ NUEVO ENDPOINT - SOLO OPERADOR\nFiltra contenedores por estado específico con información completa de ubicación.\n\nEstados válidos:\n✓ PENDIENTE\n✓ EN_TRANSITO\n✓ EN_DEPOSITO\n✓ ENTREGADO\n\nRetorna la misma información detallada que el endpoint de pendientes con ubicación.\n\nEjemplos de uso:\n- /contenedores/estado/PENDIENTE/con-ubicacion\n- /contenedores/estado/EN_TRANSITO/con-ubicacion\n- /contenedores/estado/EN_DEPOSITO/con-ubicacion\n- /contenedores/estado/ENTREGADO/con-ubicacion"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Listar Contenedores por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/cliente/{{cliente_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "cliente", "{{cliente_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene todos los contenedores de un cliente específico"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Obtener Contenedor por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/{{contenedor_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "{{contenedor_id}}"]
+            },
+            "description": "✅ VERIFICADO\nObtiene detalles completos de un contenedor específico"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Actualizar Contenedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"peso\": 5500.0,\n  \"volumen\": 28.0,\n  \"clienteId\": {{cliente_id}},\n  \"descripcion\": \"Mercadería general - Actualizada\",\n  \"estado\": \"EN_TRANSITO\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/{{contenedor_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "{{contenedor_id}}"]
+            },
+            "description": "✅ VERIFICADO\nActualiza los datos de un contenedor existente"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Actualizar Estado del Contenedor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/{{contenedor_id}}/estado?estado=EN_DEPOSITO",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "{{contenedor_id}}", "estado"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "EN_DEPOSITO"
+                }
+              ]
+            },
+            "description": "✅ VERIFICADO\nActualiza únicamente el estado de un contenedor.\n\nEstados válidos:\n- PENDIENTE\n- EN_TRANSITO\n- EN_DEPOSITO\n- ENTREGADO"
+          },
+          "response": []
+        },
+        {
+          "name": "9. Eliminar Contenedor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_operador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/contenedores/{{contenedor_manual_id}}",
+              "host": ["{{gateway_url}}"],
+              "path": ["contenedores", "{{contenedor_manual_id}}"]
+            },
+            "description": "✅ VERIFICADO\nElimina un contenedor del sistema (solo si no está en uso)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Gestión completa de contenedores - Solo OPERADOR"
+    },
+    {
       "name": "💰 OPERADOR - Gestión de Tarifas",
       "item": [
         {

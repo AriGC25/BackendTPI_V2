@@ -10,12 +10,14 @@ import com.transportista.solicitudes.repository.SolicitudRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +28,7 @@ public class RutaService {
     private final RutaRepository rutaRepository;
     private final SolicitudRepository solicitudRepository;
     private final GoogleMapsService googleMapsService;
+    private final WebClient.Builder webClientBuilder;
 
     public List<RutaDTO> consultarRutasTentativas(Long solicitudId) {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
@@ -74,13 +77,31 @@ public class RutaService {
                 tramo.setRuta(rutaGuardada);
                 tramo.setTipoTramo(tramoDTO.getTipoTramo());
                 tramo.setOrdenTramo(tramoDTO.getOrdenTramo() != null ? tramoDTO.getOrdenTramo() : orden);
-                tramo.setEstado("PENDIENTE");
+                tramo.setEstado("estimado");
                 tramo.setDireccionOrigen(tramoDTO.getDireccionOrigen());
                 tramo.setLatitudOrigen(tramoDTO.getLatitudOrigen());
                 tramo.setLongitudOrigen(tramoDTO.getLongitudOrigen());
                 tramo.setDireccionDestino(tramoDTO.getDireccionDestino());
                 tramo.setLatitudDestino(tramoDTO.getLatitudDestino());
                 tramo.setLongitudDestino(tramoDTO.getLongitudDestino());
+
+                // *** PERSISTIR DISTANCIA Y TIEMPO ESTIMADO ***
+                tramo.setDistanciaKm(tramoDTO.getDistanciaKm());
+                tramo.setTiempoEstimadoMinutos(tramoDTO.getTiempoEstimadoMinutos());
+
+                // *** PERSISTIR COSTO APROXIMADO ***
+                tramo.setCostoAproximado(tramoDTO.getCostoAproximado());
+
+                // *** ASIGNAR DÍAS DE ESTADÍA SI APLICA ***
+                if (esTramoConDeposito(tramoDTO.getTipoTramo())) {
+                    // Si el DTO tiene días de estadía, usarlos; si no, usar 1 día por defecto
+                    tramo.setDiasEstadiaDeposito(
+                        tramoDTO.getDiasEstadiaDeposito() != null
+                            ? tramoDTO.getDiasEstadiaDeposito()
+                            : 1
+                    );
+                }
+
                 tramos.add(tramo);
                 orden++;
             }
@@ -90,8 +111,28 @@ public class RutaService {
 
         // Actualizar estado de la solicitud
         solicitud.setEstado("RUTA_ASIGNADA");
+        solicitud.setCostoEstimado(rutaDTO.getCostoEstimado());
+        solicitud.setTiempoEstimadoHoras(rutaDTO.getTiempoEstimadoHoras());
+
+        // Calcular fecha estimada de entrega basada en el tiempo estimado
+        if (rutaDTO.getTiempoEstimadoHoras() != null && solicitud.getFechaSolicitud() != null) {
+            long horasEstimadas = rutaDTO.getTiempoEstimadoHoras().longValue();
+            solicitud.setFechaEstimadaEntrega(
+                solicitud.getFechaSolicitud().plusHours(horasEstimadas)
+            );
+        }
+
         solicitud.setFechaActualizacion(LocalDateTime.now());
         solicitudRepository.save(solicitud);
+
+        // Registrar evento de tracking cuando se asigna la ruta
+        registrarEventoTracking(
+            solicitud.getContenedor().getId(),
+            solicitud.getId(),
+            "RUTA_ASIGNADA",
+            "Ruta planificada con " + rutaDTO.getCantidadTramos() + " tramos",
+            "Ruta asignada - Tiempo estimado: " + rutaDTO.getTiempoEstimadoHoras() + "h - Costo estimado: $" + rutaDTO.getCostoEstimado()
+        );
 
         return convertToDTO(rutaGuardada);
     }
@@ -115,6 +156,7 @@ public class RutaService {
         final BigDecimal VELOCIDAD_PROMEDIO = BigDecimal.valueOf(60); // km/h
         final BigDecimal TIEMPO_CARGA_DESCARGA = BigDecimal.valueOf(2); // horas por tramo
         final BigDecimal COSTO_ESTADIA_DEPOSITO = BigDecimal.valueOf(500); // ARS por depósito
+        final BigDecimal HORAS_POR_DIA_ESTADIA = BigDecimal.valueOf(24); // 24 horas por día
 
         // Calcular distancia y tiempo por cada tramo
         for (TramoDTO tramo : ruta.getTramos()) {
@@ -125,14 +167,35 @@ public class RutaService {
 
             distanciaTotal = distanciaTotal.add(distanciaTramo);
 
+            // *** ASIGNAR DISTANCIA AL TRAMO ***
+            tramo.setDistanciaKm(distanciaTramo.setScale(2, RoundingMode.HALF_UP));
+
             // Costo del tramo = (distancia × costo_por_km) + (distancia × costo_combustible_por_km)
             BigDecimal costoTramo = distanciaTramo.multiply(COSTO_POR_KM.add(COSTO_COMBUSTIBLE_POR_KM));
+
+            // *** ASIGNAR COSTO APROXIMADO AL TRAMO ***
+            tramo.setCostoAproximado(costoTramo.setScale(2, RoundingMode.HALF_UP));
+
             costoTotal = costoTotal.add(costoTramo);
 
+            // *** CALCULAR TIEMPO ESTIMADO DEL TRAMO ***
             // Tiempo del tramo = (distancia / velocidad) + tiempo de carga/descarga
-            BigDecimal tiempoTramo = distanciaTramo.divide(VELOCIDAD_PROMEDIO, 2, RoundingMode.HALF_UP)
+            BigDecimal tiempoTramoHoras = distanciaTramo.divide(VELOCIDAD_PROMEDIO, 2, RoundingMode.HALF_UP)
                                                    .add(TIEMPO_CARGA_DESCARGA);
-            tiempoTotal = tiempoTotal.add(tiempoTramo);
+            // Convertir a minutos
+            Integer tiempoTramoMinutos = tiempoTramoHoras.multiply(BigDecimal.valueOf(60))
+                                                          .intValue();
+            tramo.setTiempoEstimadoMinutos(tiempoTramoMinutos);
+
+            tiempoTotal = tiempoTotal.add(tiempoTramoHoras);
+
+            // *** ASIGNAR DÍAS DE ESTADÍA SI EL TRAMO INCLUYE DEPÓSITO ***
+            if (esTramoConDeposito(tramo.getTipoTramo())) {
+                tramo.setDiasEstadiaDeposito(1); // Por defecto 1 día
+                // Agregar tiempo de estadía en depósito al tiempo total
+                BigDecimal tiempoEstadia = HORAS_POR_DIA_ESTADIA.multiply(BigDecimal.valueOf(1));
+                tiempoTotal = tiempoTotal.add(tiempoEstadia);
+            }
         }
 
         // Agregar costo de estadías en depósitos
@@ -168,6 +231,14 @@ public class RutaService {
         return factor.min(BigDecimal.valueOf(2.0)); // Máximo 2x el costo base
     }
 
+    /**
+     * Determina si un tipo de tramo incluye depósito
+     */
+    private boolean esTramoConDeposito(String tipoTramo) {
+        return "ORIGEN_DEPOSITO".equals(tipoTramo) ||
+               "DEPOSITO_DEPOSITO".equals(tipoTramo);
+    }
+
     private RutaDTO generarRutaDirecta(Solicitud solicitud) {
         RutaDTO ruta = new RutaDTO();
         ruta.setSolicitudId(solicitud.getId());
@@ -179,7 +250,7 @@ public class RutaService {
         TramoDTO tramo = new TramoDTO();
         tramo.setTipoTramo("ORIGEN_DESTINO");
         tramo.setOrdenTramo(1);
-        tramo.setEstado("PENDIENTE");
+        tramo.setEstado("estimado");
         tramo.setLatitudOrigen(solicitud.getLatitudOrigen());
         tramo.setLongitudOrigen(solicitud.getLongitudOrigen());
         tramo.setLatitudDestino(solicitud.getLatitudDestino());
@@ -206,7 +277,7 @@ public class RutaService {
         TramoDTO tramo1 = new TramoDTO();
         tramo1.setTipoTramo("ORIGEN_DEPOSITO");
         tramo1.setOrdenTramo(1);
-        tramo1.setEstado("PENDIENTE");
+        tramo1.setEstado("estimado");
         tramo1.setLatitudOrigen(solicitud.getLatitudOrigen());
         tramo1.setLongitudOrigen(solicitud.getLongitudOrigen());
         tramo1.setDireccionOrigen(solicitud.getDireccionOrigen());
@@ -219,7 +290,7 @@ public class RutaService {
         TramoDTO tramo2 = new TramoDTO();
         tramo2.setTipoTramo("DEPOSITO_DESTINO");
         tramo2.setOrdenTramo(2);
-        tramo2.setEstado("PENDIENTE");
+        tramo2.setEstado("estimado");
         tramo2.setLatitudOrigen(new BigDecimal("-34.6037"));
         tramo2.setLongitudOrigen(new BigDecimal("-58.3816"));
         tramo2.setDireccionOrigen("Depósito Central - Av. General Paz 1000");
@@ -266,6 +337,11 @@ public class RutaService {
         dto.setLongitudDestino(tramo.getLongitudDestino());
         dto.setDireccionOrigen(tramo.getDireccionOrigen());
         dto.setDireccionDestino(tramo.getDireccionDestino());
+        dto.setDistanciaKm(tramo.getDistanciaKm()); // *** NUEVO ***
+        dto.setTiempoEstimadoMinutos(tramo.getTiempoEstimadoMinutos()); // *** NUEVO ***
+        dto.setCostoAproximado(tramo.getCostoAproximado()); // *** NUEVO ***
+        dto.setCostoReal(tramo.getCostoReal()); // *** NUEVO ***
+        dto.setDiasEstadiaDeposito(tramo.getDiasEstadiaDeposito()); // *** NUEVO ***
         dto.setCamionId(tramo.getCamionId());
         dto.setTransportistaId(tramo.getTransportistaId());
         dto.setFechaInicio(tramo.getFechaInicio());
@@ -273,5 +349,31 @@ public class RutaService {
         dto.setFechaCreacion(tramo.getFechaCreacion());
         dto.setFechaActualizacion(tramo.getFechaActualizacion());
         return dto;
+    }
+
+    /**
+     * Registra un evento en el tracking-service
+     */
+    private void registrarEventoTracking(Long contenedorId, Long solicitudId, String estado, String ubicacion, String descripcion) {
+        try {
+            Map<String, Object> eventoData = Map.of(
+                "contenedorId", contenedorId,
+                "solicitudId", solicitudId,
+                "estado", estado,
+                "ubicacion", ubicacion != null ? ubicacion : "Sin ubicación",
+                "descripcion", descripcion
+            );
+
+            webClientBuilder.build()
+                .post()
+                .uri("http://tracking-service:8084/tracking/registrar")
+                .bodyValue(eventoData)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+        } catch (Exception e) {
+            // Log error pero no fallar la operación principal
+            System.err.println("Error al registrar evento de tracking: " + e.getMessage());
+        }
     }
 }

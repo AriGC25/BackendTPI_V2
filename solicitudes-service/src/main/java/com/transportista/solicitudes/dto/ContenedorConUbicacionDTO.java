@@ -10,25 +10,38 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SolicitudResponseDTO {
-    
+public class ContenedorConUbicacionDTO {
+
+    // Datos del contenedor
     private Long id;
-    private String numeroSolicitud;
-    private Long contenedorId;
+    private BigDecimal peso;
+    private BigDecimal volumen;
+    private String estado;
     private Long clienteId;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+
+    // Datos de ubicación (desde Solicitud)
+    private Long solicitudId;
+    private String numeroSolicitud;
+    private String estadoSolicitud;
+
+    // Ubicación de origen
     private String direccionOrigen;
     private BigDecimal latitudOrigen;
     private BigDecimal longitudOrigen;
+
+    // Ubicación de destino
     private String direccionDestino;
     private BigDecimal latitudDestino;
     private BigDecimal longitudDestino;
-    private String estado;
-    private BigDecimal costoEstimado;
-    private BigDecimal costoTotal;
+
+    // Ubicación actual (basada en el estado y tramos)
+    private String ubicacionActual;
+    private String descripcionUbicacion;
+
+    // Información adicional
     private BigDecimal tiempoEstimadoHoras;
-    private BigDecimal tiempoRealHoras;
-    private LocalDateTime fechaSolicitud;
     private LocalDateTime fechaEstimadaEntrega;
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime fechaActualizacion;
 }
+
